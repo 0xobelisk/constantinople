@@ -40,3 +40,7 @@ pnpm-lock.yaml
 
 #sui log
 sui.log.*
+
+.env
+
+localnode.nohup.out
