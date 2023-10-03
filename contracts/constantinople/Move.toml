@@ -1,5 +1,5 @@
 [package]
-name = "counter"
+name = "constantinople"
 version = "0.0.1"
 
 [dependencies]
@@ -7,4 +7,4 @@ Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-fram
 
 [addresses]
 sui =  "0x2"
-counter = "0x0"
+constantinople = "0x0"

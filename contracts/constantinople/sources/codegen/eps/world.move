@@ -1,4 +1,4 @@
-module counter::world {
+module constantinople::world {
     use std::ascii::{String, string};
     use std::option::Option;
     use std::vector;
@@ -8,7 +8,7 @@ module counter::world {
     use sui::tx_context::TxContext;
     use sui::bag::{Self, Bag};
     use sui::object::{Self, UID, ID};
-    use counter::entity_key;
+    use constantinople::entity_key;
 
     const VERSION: u64 = 1;
 
@@ -39,8 +39,14 @@ module counter::world {
         compnames: vector<String>,
         /// admin of the world
         admin: ID,
-        /// Components of the world
+        /// Version of the world
         version: u64
+    }
+    
+    struct CompRegister has copy, drop {
+        comp: address,
+        compname: String,
+        types: vector<String>
     }
 
     struct CompRemoveField has copy, drop {
@@ -97,7 +103,7 @@ module counter::world {
         bag::borrow_mut<address, T>(&mut world.comps, id)
     }
 
-        public fun add_comp<T : store>(world: &mut World, component_name: vector<u8>, component: T){
+    public fun add_comp<T : store>(world: &mut World, component_name: vector<u8>, component: T){
         assert!(world.version == VERSION, EWrongVersion);
         let id = entity_key::from_bytes(component_name);
         assert!(!bag::contains(&world.comps, id), ECompAlreadyExists);
@@ -108,6 +114,12 @@ module counter::world {
     public fun contains(world: &mut World, id: address): bool {
         assert!(world.version == VERSION, EWrongVersion);
         bag::contains(&mut world.comps, id)
+    }
+    
+    public fun emit_register_event(component_name: vector<u8>, types: vector<String>) {
+        let comp = entity_key::from_bytes(component_name);
+        let compname = string(component_name);
+        event::emit(CompRegister { comp,  compname, types})
     }
 
     public fun emit_remove_event(comp: address, key: address) {

@@ -1,4 +1,6 @@
-module counter::entity_key {
+module constantinople::entity_key {
+    use std::vector;
+    use sui::bcs;
     use sui::hash::keccak256;
     use sui::address;
     use sui::object;
@@ -13,5 +15,12 @@ module counter::entity_key {
 
     public fun from_u256(x: u256): address {
         address::from_u256(x)
+    }
+
+    public fun from_position(x: u64, y: u64): address {
+        let vec = vector::empty<u8>();
+        vector::append(&mut vec, bcs::to_bytes(&x));
+        vector::append(&mut vec, bcs::to_bytes(&y));
+        from_bytes(vec)
     }
 }
