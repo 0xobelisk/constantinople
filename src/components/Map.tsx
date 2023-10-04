@@ -8,7 +8,6 @@ export default function Map() {
   let dispatch = useDispatch();
   const treasureCount = 2;
   const spriteCount = 5;
-  let dialog = useSelector(state => state['dialog']);
 
 let playerSprites = { "W": 
   'assets/player/W.gif',
@@ -29,7 +28,7 @@ function loadImage(imageUrl){
 }
 
 
-  async function loadSprites(imagesUrl){
+  async function loadSprites(imagesUrl: any){
       return (await Promise.all(imagesUrl.map(loadImage)))
   }
   
@@ -42,7 +41,7 @@ function loadImage(imageUrl){
   let hero = useSelector(state => state["hero"]);
 
   // fill screen with rows of block
-  const calcOriginalMapRowNumber = function (height, width) {
+  const calcOriginalMapRowNumber = function (height: any, width: any) {
     // subtract the p tag height
     height = height * 0.75;
     // one block is 2.5vw high
@@ -58,7 +57,7 @@ function loadImage(imageUrl){
     setRowNumber(row);
   };
 
-  const withinRange = (value, arr) => {
+  const withinRange = (value: number, arr: number[]) => {
     if (arr.length === 1) {
       return value === arr[0];
     } else if (arr.length > 1) {
@@ -111,392 +110,198 @@ function loadImage(imageUrl){
     if (withinRange(map[x][y], ele_description.walkable)) {
       className = 'walkable';
     } else if (withinRange(map[x][y], ele_description.unwalkable)) {
-      className = 'unwalkable';
-      img = <img src={require('../assets/img/block/small-tree.jpg')} alt='unwalkable' />;
+      className = 'unwalkable small-tree-img';
     } else if (withinRange(map[x][y], ele_description.flower)) {
-      className = 'unwalkable';
-      img = <img src={require('../assets/img/block/flower.gif')} alt='unwalkable' />;
+      className = 'walkable flower-img';
+      // img = <img src={require('../assets/img/block/flower.gif')} alt='unwalkable' />;
     } else if (withinRange(map[x][y], ele_description.tree_top)) {
-      className = 'unwalkable';
-      img = <img src={require('../assets/img/block/tree_top.jpg')} alt='unwalkable' />;
+      className = 'unwalkable tree-top-img';
     } else if (withinRange(map[x][y], ele_description.tree_bottom)) {
-      className = 'unwalkable';
-      img = <img src={require('../assets/img/block/tree_bottom.jpg')} alt='unwalkable' />;
+      className = 'unwalkable tree-bottom-img';
     } else if (withinRange(map[x][y], ele_description.tussock)) {
       className = 'walkable tussock';
     } else if (withinRange(map[x][y], ele_description.ground_top_1)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/ground/50.png')} alt='walkable' />;
+      className = 'walkable ground-img-1';
     } else if (withinRange(map[x][y], ele_description.ground_top_2)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/ground/51.png')} alt='walkable' />;
+      className = 'walkable ground-img-2';
     } else if (withinRange(map[x][y], ele_description.ground_top_3)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/ground/52.png')} alt='walkable' />;
+      className = 'walkable ground-img-3';
     } else if (withinRange(map[x][y], ele_description.ground_middle_1)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/ground/53.png')} alt='walkable' />;
+      className = 'walkable ground-img-4';
     } else if (withinRange(map[x][y], ele_description.ground_middle_2)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/ground/54.png')} alt='walkable' />;
+      className = 'walkable ground-img-5';
     } else if (withinRange(map[x][y], ele_description.ground_middle_3)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/ground/55.png')} alt='walkable' />;
+      className = 'walkable ground-img-6';
     } else if (withinRange(map[x][y], ele_description.ground_bottom_1)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/ground/56.png')} alt='walkable' />;
+      className = 'walkable ground-img-7';
     } else if (withinRange(map[x][y], ele_description.ground_bottom_2)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/ground/57.png')} alt='walkable' />;
+      className = 'walkable ground-img-8';
     } else if (withinRange(map[x][y], ele_description.ground_bottom_3)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/ground/58.png')} alt='walkable' />;
+      className = 'walkable ground-img-9';
     } else if (withinRange(map[x][y], ele_description.water_top_1)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/water/60.png')} alt='walkable' />;
+      className = 'walkable water-img-1';
     } else if (withinRange(map[x][y], ele_description.water_top_2)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/water/61.png')} alt='walkable' />;
+      className = 'unwalkable water-img-2';
     } else if (withinRange(map[x][y], ele_description.water_top_3)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/water/62.png')} alt='walkable' />;
+      className = 'unwalkable water-img-3';
     } else if (withinRange(map[x][y], ele_description.water_middle_1)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/water/63.png')} alt='walkable' />;
+      className = 'unwalkable water-img-4';
     } else if (withinRange(map[x][y], ele_description.water_middle_2)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/water/64.png')} alt='walkable' />;
+      className = 'unwalkable water-img-5';
     } else if (withinRange(map[x][y], ele_description.water_middle_3)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/water/65.png')} alt='walkable' />;
+      className = 'unwalkable water-img-6';
     } else if (withinRange(map[x][y], ele_description.water_bottom_1)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/water/66.png')} alt='walkable' />;
+      className = 'unwalkable water-img-7';
     } else if (withinRange(map[x][y], ele_description.water_bottom_2)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/water/67.png')} alt='walkable' />;
+      className = 'unwalkable water-img-8';
     } else if (withinRange(map[x][y], ele_description.water_bottom_3)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/water/68.png')} alt='walkable' />;
-
-
+      className = 'unwalkable water-img-9';
     } else if (withinRange(map[x][y], ele_description.big_house_1)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_1.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-1';
     } else if (withinRange(map[x][y], ele_description.big_house_2)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_2.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-2';
     } else if (withinRange(map[x][y], ele_description.big_house_3)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_3.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-3';
     } else if (withinRange(map[x][y], ele_description.big_house_4)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_4.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-4';
     } else if (withinRange(map[x][y], ele_description.big_house_5)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_5.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-5';
     } else if (withinRange(map[x][y], ele_description.big_house_6)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_6.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-6';
     } else if (withinRange(map[x][y], ele_description.big_house_7)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_7.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-7';
     } else if (withinRange(map[x][y], ele_description.big_house_8)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_8.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-8';
     } else if (withinRange(map[x][y], ele_description.big_house_9)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_9.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-9';
     } else if (withinRange(map[x][y], ele_description.big_house_10)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_10.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-10';
     } else if (withinRange(map[x][y], ele_description.big_house_11)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_11.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-11';
     } else if (withinRange(map[x][y], ele_description.big_house_12)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_12.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-12';
     } else if (withinRange(map[x][y], ele_description.big_house_13)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_13.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-13';
     } else if (withinRange(map[x][y], ele_description.big_house_14)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_14.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-14';
     } else if (withinRange(map[x][y], ele_description.big_house_15)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_15.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-15';
     } else if (withinRange(map[x][y], ele_description.big_house_16)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_16.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-16';
     } else if (withinRange(map[x][y], ele_description.big_house_17)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_17.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-17';
     } else if (withinRange(map[x][y], ele_description.big_house_18)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_18.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-18';
     } else if (withinRange(map[x][y], ele_description.big_house_19)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_19.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-19';
     } else if (withinRange(map[x][y], ele_description.big_house_20)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_20.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-20';
     } else if (withinRange(map[x][y], ele_description.big_house_21)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_21.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-21';
     } else if (withinRange(map[x][y], ele_description.big_house_22)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_22.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-22';
     } else if (withinRange(map[x][y], ele_description.big_house_23)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_23.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-23';
     } else if (withinRange(map[x][y], ele_description.big_house_24)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_24.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-24';
     } else if (withinRange(map[x][y], ele_description.big_house_25)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_25.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-25';
     } else if (withinRange(map[x][y], ele_description.big_house_26)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_26.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-26';
     } else if (withinRange(map[x][y], ele_description.big_house_27)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_27.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-27';
     } else if (withinRange(map[x][y], ele_description.big_house_28)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_28.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-28';
     } else if (withinRange(map[x][y], ele_description.big_house_29)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_29.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-29';
     } else if (withinRange(map[x][y], ele_description.big_house_30)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_30.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-30';
     } else if (withinRange(map[x][y], ele_description.big_house_31)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_31.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-31';
     } else if (withinRange(map[x][y], ele_description.big_house_32)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_32.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-32';
     } else if (withinRange(map[x][y], ele_description.big_house_33)) {
-      const sprite = 'sprite' + randomState1[`${x}-${y}`];
-      className = `unwalkable ${sprite}`;
-      const npc_image = mapData.map_type == 'gallery' ? 'gallery_house' : sprite;
-      img = <img src={require(`../assets/img/big_house/house_33.png`)} alt={npc_image} onClick={() => onInteract(x, y)}/>
-
+      // const sprite = 'sprite' + randomState1[`${x}-${y}`];
+      className = `unwalkable big-house-img-33`;
     } else if (withinRange(map[x][y], ele_description.big_house_34)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_34.png')} alt='walkable' />;
-
+      className = 'unwalkable big-house-img-34';
     } else if (withinRange(map[x][y], ele_description.big_house_35)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/big_house/house_35.png')} alt='walkable' />;
-
-
+      className = 'unwalkable big-house-img-35';
     } else if (withinRange(map[x][y], ele_description.small_house_1)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_1.png')} alt='walkable' />;
-
-
+      className = 'unwalkable small-house-img-1';
     } else if (withinRange(map[x][y], ele_description.small_house_2)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_2.png')} alt='walkable' />;
-
-
+      className = 'unwalkable small-house-img-2';
     } else if (withinRange(map[x][y], ele_description.small_house_3)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_3.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-3';
     } else if (withinRange(map[x][y], ele_description.small_house_4)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_4.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-4';
     } else if (withinRange(map[x][y], ele_description.small_house_5)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_5.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-5';
     } else if (withinRange(map[x][y], ele_description.small_house_6)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_6.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-6';
     } else if (withinRange(map[x][y], ele_description.small_house_7)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_7.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-7';
     } else if (withinRange(map[x][y], ele_description.small_house_8)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_8.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-8';
     } else if (withinRange(map[x][y], ele_description.small_house_9)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_9.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-9';
     } else if (withinRange(map[x][y], ele_description.small_house_10)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_10.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-10';
     } else if (withinRange(map[x][y], ele_description.small_house_11)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_11.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-11';
     } else if (withinRange(map[x][y], ele_description.small_house_12)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_12.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-12';
     } else if (withinRange(map[x][y], ele_description.small_house_13)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_13.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-13';
     } else if (withinRange(map[x][y], ele_description.small_house_14)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_14.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-14';
     } else if (withinRange(map[x][y], ele_description.small_house_15)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_15.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-15';
     } else if (withinRange(map[x][y], ele_description.small_house_16)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_16.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-16';
     } else if (withinRange(map[x][y], ele_description.small_house_17)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_17.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-17';
     } else if (withinRange(map[x][y], ele_description.small_house_18)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_18.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-18';
     } else if (withinRange(map[x][y], ele_description.small_house_19)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_19.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-19';
     } else if (withinRange(map[x][y], ele_description.small_house_20)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_20.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-20';
     } else if (withinRange(map[x][y], ele_description.small_house_21)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_21.png')} alt='walkable' />;
-
+      className = 'unwalkable small-house-img-21';
     } else if (withinRange(map[x][y], ele_description.small_house_22)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_22.png')} alt='walkable' />;
-
-
+      className = 'unwalkable small-house-img-22';
     } else if (withinRange(map[x][y], ele_description.small_house_23)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_23.png')} alt='walkable' />;
-
-
+      className = 'unwalkable small-house-img-23';
     } else if (withinRange(map[x][y], ele_description.small_house_24)) {
-      const sprite = 'sprite' + randomState1[`${x}-${y}`];
-      className = `unwalkable ${sprite}`;
-      const npc_image = mapData.map_type == 'gallery' ? 'gallery_house' : sprite;
-      img = <img src={require(`../assets/img/small_house/house_24.png`)} alt={npc_image} onClick={() => onInteract(x, y)}/>
+      className = `unwalkable small-house-img-24`;
     } else if (withinRange(map[x][y], ele_description.small_house_25)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/small_house/house_25.png')} alt='walkable' />;
-
-
+      className = 'unwalkable small-house-img-25';
     } else if (withinRange(map[x][y], ele_description.house_land)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/block/land_1.png')} alt='walkable' />;
+      className = 'walkable land-img';
     } else if (withinRange(map[x][y], ele_description.house_stree)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/block/street_1.png')} alt='walkable' />;
-
+      className = 'unwalkable street-img';
     } else if (withinRange(map[x][y], ele_description.obelisk_top)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/block/obelisk1.jpg')} alt='walkable' />;
+      className = 'unwalkable obelisk-img-1';
     } else if (withinRange(map[x][y], ele_description.obelisk_middle_1)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/block/obelisk2.jpg')} alt='walkable' />;
+      className = 'unwalkable obelisk-img-2';
     } else if (withinRange(map[x][y], ele_description.obelisk_middle_2)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/block/obelisk3.jpg')} alt='walkable' />;
-    // } else if (withinRange(map[x][y], ele_description.obelisk_bottom)) {
-    //   className = 'walkable';
-    //   img = <img src={require('../assets/img/block/obelisk4.jpg')} alt='walkable' />;
-
-
-
+      className = 'unwalkable obelisk-img-3';
     } else if (withinRange(map[x][y], ele_description.obelisk_bottom)) {
-      const sprite = 'sprite' + randomState1[`${x}-${y}`];
-      className = `unwalkable ${sprite}`;
-      const npc_image = mapData.map_type == 'gallery' ? 'gallery_house' : sprite;
-      img = <img src={require(`../assets/img/block/obelisk4.jpg`)} alt={npc_image} onClick={() => onInteract(x, y)}/>
-
-
+      className = `unwalkable obelisk-img-4`;
     } else if (withinRange(map[x][y], ele_description.obelisk_bottom_left)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/block/obelisk5.jpg')} alt='walkable' />;
-
+      className = 'unwalkable obelisk-img-5';
     } else if (withinRange(map[x][y], ele_description.obelisk_bottom_right)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/block/obelisk6.jpg')} alt='walkable' />;
-
+      className = 'unwalkable obelisk-img-6';
     } else if (withinRange(map[x][y], ele_description.old_man)) {
-      const sprite = 'sprite' + randomState1[`${x}-${y}`];
-      className = `unwalkable ${sprite} npc_man`;
-      const npc_image = mapData.map_type == 'gallery' ? 'gallery_house' : sprite;
-      img = <img src={require(`../assets/img/block/oldman.png`)} alt={npc_image} onClick={() => onInteract(x, y)}/>
-
-
+      className = `unwalkable oldman-img npc_man`;
     } else if (withinRange(map[x][y], ele_description.fat_man)) {
-      const sprite = 'sprite' + randomState1[`${x}-${y}`];
-      className = `unwalkable ${sprite}`;
-      const npc_image = mapData.map_type == 'gallery' ? 'gallery_house' : sprite;
-      img = <img src={require(`../assets/img/block/fatman.png`)} alt={npc_image} onClick={() => onInteract(x, y)}/>
-
-
+      // const sprite = 'sprite' + randomState1[`${x}-${y}`];
+      className = `unwalkable fatman-img`;
+      // const npc_image = mapData.map_type == 'gallery' ? 'gallery_house' : sprite;
+      // img = <img src={require(`../assets/img/block/fatman.png`)} alt={npc_image} onClick={() => onInteract(x, y)}/>
     } else if (withinRange(map[x][y], ele_description.rocks)) {
-      className = 'walkable';
-      img = <img src={require('../assets/img/block/rocks.png')} alt='walkable' />;
-
+      className = 'unwalkable rocks-img';
     } else if (ele_description.object !== undefined && withinRange(map[x][y], ele_description.object)) {
       let lockState = unboxState[`${x}-${y}`] === true ? 'unlocked' : 'locked';
       let randomStateKey = randomState1[`${x}-${y}`];
@@ -509,7 +314,6 @@ function loadImage(imageUrl){
       const ncp_image = mapData.map_type == 'gallery' ? 'gallery_house' : sprite;
       img = <img src={require(`../assets/img/block/${ncp_image}.png`)} alt={ncp_image} onClick={() => onInteract(x, y)} style={{cursor: ifInRange(x, y) ? 'pointer' : ''}}/>
     }
-    // console.log(className)
     return <div className={`map-block flex ${className} ${blockType}`} key={key}>{title}{img}</div>
   };
 

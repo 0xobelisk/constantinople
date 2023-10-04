@@ -1,3 +1,2 @@
-
-const PRIVATEKEY =
-export default PRIVATEKEY
+const PRIVATEKEY = '014e45cbd1ee9238f39282d67e16841adba7f1ef993ee995b99032aa36ef6a7e';
+export default PRIVATEKEY;

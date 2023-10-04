@@ -1,0 +1,310 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+    bg image
+*/
+
+
+/*
+    big house image
+*/
+.map-block.big-house-img-1 {
+    background-image: url(../assets/img/big_house/house_1.png);
+}
+.map-block.big-house-img-2 {
+    background-image: url(../assets/img/big_house/house_2.png);
+}
+.map-block.big-house-img-3 {
+    background-image: url(../assets/img/big_house/house_3.png);
+}
+.map-block.big-house-img-4 {
+    background-image: url(../assets/img/big_house/house_4.png);
+}
+.map-block.big-house-img-5 {
+    background-image: url(../assets/img/big_house/house_5.png);
+}
+.map-block.big-house-img-6 {
+    background-image: url(../assets/img/big_house/house_6.png);
+}
+.map-block.big-house-img-7 {
+    background-image: url(../assets/img/big_house/house_7.png);
+}
+.map-block.big-house-img-8 {
+    background-image: url(../assets/img/big_house/house_8.png);
+}
+.map-block.big-house-img-9 {
+    background-image: url(../assets/img/big_house/house_9.png);
+}
+.map-block.big-house-img-10 {
+    background-image: url(../assets/img/big_house/house_10.png);
+}
+.map-block.big-house-img-11 {
+    background-image: url(../assets/img/big_house/house_11.png);
+}
+.map-block.big-house-img-12 {
+    background-image: url(../assets/img/big_house/house_12.png);
+}
+.map-block.big-house-img-13 {
+    background-image: url(../assets/img/big_house/house_13.png);
+}
+.map-block.big-house-img-14 {
+    background-image: url(../assets/img/big_house/house_14.png);
+}
+.map-block.big-house-img-15 {
+    background-image: url(../assets/img/big_house/house_15.png);
+}
+.map-block.big-house-img-16 {
+    background-image: url(../assets/img/big_house/house_16.png);
+}
+.map-block.big-house-img-17 {
+    background-image: url(../assets/img/big_house/house_17.png);
+}
+.map-block.big-house-img-18 {
+    background-image: url(../assets/img/big_house/house_18.png);
+}
+.map-block.big-house-img-19 {
+    background-image: url(../assets/img/big_house/house_19.png);
+}
+.map-block.big-house-img-20 {
+    background-image: url(../assets/img/big_house/house_20.png);
+}
+.map-block.big-house-img-21 {
+    background-image: url(../assets/img/big_house/house_21.png);
+}
+.map-block.big-house-img-22 {
+    background-image: url(../assets/img/big_house/house_22.png);
+}
+.map-block.big-house-img-23 {
+    background-image: url(../assets/img/big_house/house_23.png);
+}
+.map-block.big-house-img-24 {
+    background-image: url(../assets/img/big_house/house_24.png);
+}
+.map-block.big-house-img-25 {
+    background-image: url(../assets/img/big_house/house_25.png);
+}
+.map-block.big-house-img-26 {
+    background-image: url(../assets/img/big_house/house_26.png);
+}
+.map-block.big-house-img-27 {
+    background-image: url(../assets/img/big_house/house_27.png);
+}
+.map-block.big-house-img-28 {
+    background-image: url(../assets/img/big_house/house_28.png);
+}
+.map-block.big-house-img-29 {
+    background-image: url(../assets/img/big_house/house_29.png);
+}
+.map-block.big-house-img-30 {
+    background-image: url(../assets/img/big_house/house_30.png);
+}
+.map-block.big-house-img-31 {
+    background-image: url(../assets/img/big_house/house_31.png);
+}
+.map-block.big-house-img-32 {
+    background-image: url(../assets/img/big_house/house_32.png);
+}
+.map-block.big-house-img-33 {
+    background-image: url(../assets/img/big_house/house_33.png);
+}
+.map-block.big-house-img-34 {
+    background-image: url(../assets/img/big_house/house_34.png);
+}
+.map-block.big-house-img-35 {
+    background-image: url(../assets/img/big_house/house_35.png);
+}
+
+/*
+    block image
+*/
+.map-block.fatman-img {
+    background-image: url(../assets/img/block/fatman.png);
+}
+.map-block.flower-img {
+    background-image: url(../assets/img/block/flower.gif);
+}
+.map-block.gallery-house-img {
+    background-image: url(../assets/img/block/gallery_house.png);
+}
+.map-block.land-img {
+    background-image: url(../assets/img/block/land_1.png);
+}
+.map-block.obelisk-img-1 {
+    background-image: url(../assets/img/block/obelisk1.jpg);
+}
+.map-block.obelisk-img-2 {
+    background-image: url(../assets/img/block/obelisk2.jpg);
+}
+.map-block.obelisk-img-3 {
+    background-image: url(../assets/img/block/obelisk3.jpg);
+}
+.map-block.obelisk-img-4 {
+    background-image: url(../assets/img/block/obelisk4.jpg);
+}
+.map-block.obelisk-img-5 {
+    background-image: url(../assets/img/block/obelisk5.jpg);
+}
+.map-block.obelisk-img-6 {
+    background-image: url(../assets/img/block/obelisk6.jpg);
+}
+.map-block.oldman-img {
+    content: url(../assets/img/block/oldman.png);
+}
+.map-block.rocks-img {
+    background-image: url(../assets/img/block/rocks.png);
+}
+.map-block.small-tree-img {
+    background-image: url(../assets/img/block/small-tree.jpg);
+}
+.map-block.street-img {
+    background-image: url(../assets/img/block/street_1.png);
+}
+.map-block.tree-bottom-img {
+    background-image: url(../assets/img/block/tree_bottom.jpg);
+}
+.map-block.tree-top-img {
+    background-image: url(../assets/img/block/tree_top.jpg);
+}
+
+/*
+    ground image
+*/
+.map-block.ground-img-1 {
+    background-image: url(../assets/img/ground/50.png);
+}
+.map-block.ground-img-2 {
+    background-image: url(../assets/img/ground/51.png);
+}
+.map-block.ground-img-3 {
+    background-image: url(../assets/img/ground/52.png);
+}
+.map-block.ground-img-4 {
+    background-image: url(../assets/img/ground/53.png);
+}
+.map-block.ground-img-5 {
+    background-image: url(../assets/img/ground/54.png);
+}
+.map-block.ground-img-6 {
+    background-image: url(../assets/img/ground/55.png);
+}
+.map-block.ground-img-7 {
+    background-image: url(../assets/img/ground/56.png);
+}
+.map-block.ground-img-8 {
+    background-image: url(../assets/img/ground/57.png);
+}
+.map-block.ground-img-9 {
+    background-image: url(../assets/img/ground/58.png);
+}
+
+/*
+    small house image
+*/
+.map-block.small-house-img-1 {
+    background-image: url(../assets/img/small_house/house_1.png);
+}
+.map-block.small-house-img-2 {
+    background-image: url(../assets/img/small_house/house_2.png);
+}
+.map-block.small-house-img-3 {
+    background-image: url(../assets/img/small_house/house_3.png);
+}
+.map-block.small-house-img-4 {
+    background-image: url(../assets/img/small_house/house_4.png);
+}
+.map-block.small-house-img-5 {
+    background-image: url(../assets/img/small_house/house_5.png);
+}
+.map-block.small-house-img-6 {
+    background-image: url(../assets/img/small_house/house_6.png);
+}
+.map-block.small-house-img-7 {
+    background-image: url(../assets/img/small_house/house_7.png);
+}
+.map-block.small-house-img-8 {
+    background-image: url(../assets/img/small_house/house_8.png);
+}
+.map-block.small-house-img-9 {
+    background-image: url(../assets/img/small_house/house_9.png);
+}
+.map-block.small-house-img-10 {
+    background-image: url(../assets/img/small_house/house_10.png);
+}
+.map-block.small-house-img-11 {
+    background-image: url(../assets/img/small_house/house_11.png);
+}
+.map-block.small-house-img-12 {
+    background-image: url(../assets/img/small_house/house_12.png);
+}
+.map-block.small-house-img-13 {
+    background-image: url(../assets/img/small_house/house_13.png);
+}
+.map-block.small-house-img-14 {
+    background-image: url(../assets/img/small_house/house_14.png);
+}
+.map-block.small-house-img-15 {
+    background-image: url(../assets/img/small_house/house_15.png);
+}
+.map-block.small-house-img-16 {
+    background-image: url(../assets/img/small_house/house_16.png);
+}
+.map-block.small-house-img-17 {
+    background-image: url(../assets/img/small_house/house_17.png);
+}
+.map-block.small-house-img-18 {
+    background-image: url(../assets/img/small_house/house_18.png);
+}
+.map-block.small-house-img-19 {
+    background-image: url(../assets/img/small_house/house_19.png);
+}
+.map-block.small-house-img-20 {
+    background-image: url(../assets/img/small_house/house_20.png);
+}
+.map-block.small-house-img-21 {
+    background-image: url(../assets/img/small_house/house_21.png);
+}
+.map-block.small-house-img-22 {
+    background-image: url(../assets/img/small_house/house_22.png);
+}
+.map-block.small-house-img-23 {
+    background-image: url(../assets/img/small_house/house_23.png);
+}
+.map-block.small-house-img-24 {
+    background-image: url(../assets/img/small_house/house_24.png);
+}
+.map-block.small-house-img-25 {
+    background-image: url(../assets/img/small_house/house_25.png);
+}
+
+/*
+    water image
+*/
+.map-block.water-img-1 {
+    background-image: url(../assets/img/water/60.png);
+}
+.map-block.water-img-2 {
+    background-image: url(../assets/img/water/61.png);
+}
+.map-block.water-img-3 {
+    background-image: url(../assets/img/water/62.png);
+}
+.map-block.water-img-4 {
+    background-image: url(../assets/img/water/63.png);
+}
+.map-block.water-img-5 {
+    background-image: url(../assets/img/water/64.png);
+}
+.map-block.water-img-6 {
+    background-image: url(../assets/img/water/65.png);
+}
+.map-block.water-img-7 {
+    background-image: url(../assets/img/water/66.png);
+}
+.map-block.water-img-8 {
+    background-image: url(../assets/img/water/67.png);
+}
+.map-block.water-img-9 {
+    background-image: url(../assets/img/water/68.png);
+}
