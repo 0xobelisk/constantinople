@@ -1,0 +1,9 @@
+export * as waterImg1 from "./60.png";
+export * as waterImg2 from "./61.png";
+export * as waterImg3 from "./62.png";
+export * as waterImg4 from "./63.png";
+export * as waterImg5 from "./64.png";
+export * as waterImg6 from "./65.png";
+export * as waterImg7 from "./66.png";
+export * as waterImg8 from "./67.png";
+export * as waterImg9 from "./68.png";
