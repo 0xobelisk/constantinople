@@ -44,3 +44,4 @@ sui.log.*
 .env
 
 localnode.nohup.out
+src/chain/key.ts
