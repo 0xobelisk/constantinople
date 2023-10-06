@@ -1,4 +1,4 @@
-module constantinople::position_comp {
+module constantinople::encounter_comp {
     use std::ascii::{String, string};
     use std::option::{some, none};
     use sui::tx_context::TxContext;
@@ -11,19 +11,22 @@ module constantinople::position_comp {
     // Systems
 	friend constantinople::rpg_system;
 
-	const NAME: vector<u8> = b"position";
+	const NAME: vector<u8> = b"encounter";
 
-	// x
-	// y
-	struct PositionData has copy , drop, store {
-		x: u64,
-		y: u64
+	// exists
+	// monster
+	// catchAttempts
+	struct EncounterData has copy , drop, store {
+		exists: bool,
+		monster: address,
+		catchAttempts: u64
 	}
 
-	public fun new_data(x: u64, y: u64): PositionData {
-		PositionData {
-			x, 
-			y
+	public fun new_data(exists: bool, monster: address, catchAttempts: u64): EncounterData {
+		EncounterData {
+			exists, 
+			monster, 
+			catchAttempts
 		}
 	}
 
@@ -32,7 +35,7 @@ module constantinople::position_comp {
 		name: String,
 		entity_key_to_index: Table<address, u64>,
 		entities: TableVec<address>,
-		data: Table<address, PositionData>
+		data: Table<address, EncounterData>
 	}
 
 	public fun new(ctx: &mut TxContext): CompMetadata {
@@ -40,7 +43,7 @@ module constantinople::position_comp {
 			name: name(),
 			entity_key_to_index: table::new<address, u64>(ctx),
 			entities: table_vec::empty<address>(ctx),
-			data: table::new<address, PositionData>(ctx)
+			data: table::new<address, EncounterData>(ctx)
 		}
 	}
 
@@ -62,22 +65,22 @@ module constantinople::position_comp {
 		table_vec::length(&_obelisk_component.entities)
 	}
 
-	public fun data(world: &World): &Table<address, PositionData> {
+	public fun data(world: &World): &Table<address, EncounterData> {
 		let _obelisk_component = world::get_comp<CompMetadata>(world, id());
 		&_obelisk_component.data
 	}
 
 	public fun register(world: &mut World, ctx: &mut TxContext) {
 		world::add_comp<CompMetadata>(world, NAME, new(ctx));
-		events::emit_register(NAME, none<PositionData>());
+		events::emit_register(NAME, none<EncounterData>());
 	}
 
-	public(friend) fun add(world: &mut World, key: address, x: u64, y: u64) {
+	public(friend) fun add(world: &mut World, key: address, exists: bool, monster: address, catchAttempts: u64) {
 		let _obelisk_component = world::get_mut_comp<CompMetadata>(world, id());
 		table::add(&mut _obelisk_component.entity_key_to_index, key, table_vec::length(&_obelisk_component.entities));
 		table_vec::push_back(&mut _obelisk_component.entities, key);
-		table::add(&mut _obelisk_component.data, key, new_data(x, y));
-		events::emit_set(id(), some(key), new_data(x, y))
+		table::add(&mut _obelisk_component.data, key, new_data(exists, monster, catchAttempts));
+events::emit_set(id(), some(key), new_data(exists, monster, catchAttempts))
 	}
 
 	public(friend) fun remove(world: &mut World, key: address) {
@@ -93,49 +96,63 @@ module constantinople::position_comp {
 		events::emit_remove(id(), key)
 	}
 
-	public(friend) fun update(world: &mut World, key: address, x: u64, y: u64) {
+	public(friend) fun update(world: &mut World, key: address, exists: bool, monster: address, catchAttempts: u64) {
 		let _obelisk_component = world::get_mut_comp<CompMetadata>(world, id());
-		*table::borrow_mut<address, PositionData>(&mut _obelisk_component.data, key) = new_data(x, y);
-		events::emit_set(id(), some(key), new_data(x, y))
+		*table::borrow_mut<address, EncounterData>(&mut _obelisk_component.data, key) = new_data(exists, monster, catchAttempts);
+		events::emit_set(id(), some(key), new_data(exists, monster, catchAttempts))
 	}
-	public(friend) fun update_x(world: &mut World, key: address, x: u64) {
+	public(friend) fun update_exists(world: &mut World, key: address, exists: bool) {
 		let _obelisk_component = world::get_mut_comp<CompMetadata>(world, id());
-		let _obelisk_data = table::borrow_mut<address, PositionData>(&mut _obelisk_component.data, key);
-		_obelisk_data.x = x;
+		let _obelisk_data = table::borrow_mut<address, EncounterData>(&mut _obelisk_component.data, key);
+		_obelisk_data.exists = exists;
 		events::emit_set(id(), some(key), *_obelisk_data)
 	}
 
-	public(friend) fun update_y(world: &mut World, key: address, y: u64) {
+	public(friend) fun update_monster(world: &mut World, key: address, monster: address) {
 		let _obelisk_component = world::get_mut_comp<CompMetadata>(world, id());
-		let _obelisk_data = table::borrow_mut<address, PositionData>(&mut _obelisk_component.data, key);
-		_obelisk_data.y = y;
+		let _obelisk_data = table::borrow_mut<address, EncounterData>(&mut _obelisk_component.data, key);
+		_obelisk_data.monster = monster;
 		events::emit_set(id(), some(key), *_obelisk_data)
 	}
 
-	public fun get(world: &World ,key: address): (u64,u64) {
+	public(friend) fun update_catchAttempts(world: &mut World, key: address, catchAttempts: u64) {
+		let _obelisk_component = world::get_mut_comp<CompMetadata>(world, id());
+		let _obelisk_data = table::borrow_mut<address, EncounterData>(&mut _obelisk_component.data, key);
+		_obelisk_data.catchAttempts = catchAttempts;
+		events::emit_set(id(), some(key), *_obelisk_data)
+	}
+
+	public fun get(world: &World ,key: address): (bool,address,u64) {
   		let _obelisk_component = world::get_comp<CompMetadata>(world, id());
-		let _obelisk_data = table::borrow<address, PositionData>(&_obelisk_component.data, key);
+		let _obelisk_data = table::borrow<address, EncounterData>(&_obelisk_component.data, key);
 		(
-			_obelisk_data.x,
-			_obelisk_data.y
+			_obelisk_data.exists,
+			_obelisk_data.monster,
+			_obelisk_data.catchAttempts
 		)
 }
 
-	public fun get_x(world: &World, key: address): u64 {
+	public fun get_exists(world: &World, key: address): bool {
 		let _obelisk_component = world::get_comp<CompMetadata>(world, id());
-		let _obelisk_data = table::borrow<address, PositionData>(&_obelisk_component.data, key);
-		_obelisk_data.x
+		let _obelisk_data = table::borrow<address, EncounterData>(&_obelisk_component.data, key);
+		_obelisk_data.exists
 	}
 
-	public fun get_y(world: &World, key: address): u64 {
+	public fun get_monster(world: &World, key: address): address {
 		let _obelisk_component = world::get_comp<CompMetadata>(world, id());
-		let _obelisk_data = table::borrow<address, PositionData>(&_obelisk_component.data, key);
-		_obelisk_data.y
+		let _obelisk_data = table::borrow<address, EncounterData>(&_obelisk_component.data, key);
+		_obelisk_data.monster
+	}
+
+	public fun get_catchAttempts(world: &World, key: address): u64 {
+		let _obelisk_component = world::get_comp<CompMetadata>(world, id());
+		let _obelisk_data = table::borrow<address, EncounterData>(&_obelisk_component.data, key);
+		_obelisk_data.catchAttempts
 	}
 
 	public fun contains(world: &World, key: address): bool {
 		let _obelisk_component = world::get_comp<CompMetadata>(world, id());
-		table::contains<address, PositionData>(&_obelisk_component.data, key)
+		table::contains<address, EncounterData>(&_obelisk_component.data, key)
 	}
 
 }

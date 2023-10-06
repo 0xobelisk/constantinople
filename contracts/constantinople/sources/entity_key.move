@@ -21,6 +21,7 @@ module constantinople::entity_key {
         let vec = vector::empty<u8>();
         vector::append(&mut vec, bcs::to_bytes(&x));
         vector::append(&mut vec, bcs::to_bytes(&y));
+        vector::append(&mut vec, bcs::to_bytes(&b"position"));
         from_bytes(vec)
     }
 }
