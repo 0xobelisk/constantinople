@@ -35,6 +35,22 @@ export function setProgress (data: any) {
       dispatch({ type: 'SET_DIALOG', data: data })
   }
 
+  export const setSendTxLog = (data: any) => 
+  (dispatch: any, getState: any) => {
+    dispatch({ type: 'SET_SEND_TX_LOG', data: data })
+  }
+
+  export const setContractMetadata = (data: any) => 
+  (dispatch: any, getState: any) => {
+    dispatch({ type: 'SET_CONTRACT_METADATA', data: data })
+  }
+
+  export function setMonster (data: any) {
+    return (dispatch: any, getState: any) => {
+      dispatch({ type: 'SET_MONSTER', data: data })
+    }
+  }
+
   export function setAlert (data: any) {
     return (dispatch: any, getState: any) => {
       dispatch({ type: 'SET_ALERT', data: data })

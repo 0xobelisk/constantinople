@@ -1,22 +1,24 @@
-import {DevInspectResults, getMetadata, Obelisk, TransactionBlock} from "@0xobelisk/client";
+import {DevInspectResults, getMetadata, Obelisk, TransactionBlock, BCS, getSuiMoveConfig} from "@0xobelisk/client";
 import {useEffect, useState} from "react";
-import { Map, Dialog } from "../../components";
+import { Map, Dialog, PVPModal } from "../../components";
 import {Value} from "../../jotai";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from 'react-redux';
 import {NETWORK, PACKAGE_ID, WORLD_ID} from "../../chain/config";
 import {obeliskConfig} from "../../../obelisk.config";
 import PRIVATEKEY from "../../chain/key";
-import { setHero, setMapData } from "../../store/actions"
+import { setHero, setMapData, setContractMetadata, setMonster } from "../../store/actions"
 
 const Home = () =>{
   let dispatch = useDispatch();
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
-    const [contractMetadata, setContractMetadata] = useState()
+    // const [contractMetadata, setContractMetadata] = useState()
+    const [haveMonster, setHaveMonster] = useState(false)
     const rpgworld = async () => {
         const metadata = await getMetadata(NETWORK, PACKAGE_ID);
-        setContractMetadata(metadata)
+        // setContractMetadata(metadata)
+        dispatch(setContractMetadata(metadata))
         const obelisk = new Obelisk({
             networkType: NETWORK,
             packageId: PACKAGE_ID,
@@ -35,22 +37,49 @@ const Home = () =>{
         if (player_data.length === 0) {
           const tx = new TransactionBlock()
           const params = [
-            tx.pure(WORLD_ID)
+            tx.pure(WORLD_ID),
+            tx.pure(0),
+            tx.pure(0),
           ]
-          await obelisk.tx.move_system.register(tx, params)
+          await obelisk.tx.rpg_system.register(tx, params)
         }
 
-        console.log(player_data)
+
+
+        const map_data = await obelisk.getEntity(WORLD_ID, 'map')
+
+        let new_tx = new TransactionBlock()
+        let new_params = [
+          new_tx.pure(WORLD_ID),
+          new_tx.pure(obelisk.getAddress())
+        ]
+        console.log(WORLD_ID)
+        console.log(obelisk.getAddress())
+        const encounter_contain = await obelisk.query.encounter_comp.contains(new_tx, new_params) as DevInspectResults;
+        let returnValue = [];
+
+        if (encounter_contain.effects.status.status === 'success') {
+          let resultList = encounter_contain.results![0].returnValues!;
+          for (let res of resultList) {
+            const bcs = new BCS(getSuiMoveConfig());
+            let value = Uint8Array.from(res[0]);
+            let data = bcs.de(res[1], value);
+            returnValue.push(data);
+          }
+        }
+        // if (returnValue[0] === )
+        console.log(returnValue[0])
         console.log(JSON.stringify(player_data))
         const stepLength = 2.5;
-        console.log( player_data[0] * stepLength)
         dispatch(setHero({
           name: obelisk.getAddress(),
           position: { left: player_data[0] * stepLength, top: player_data[1] * stepLength },
+          lock: returnValue[0]
         }))
-    
-
-        const map_data = await obelisk.getEntity(WORLD_ID, 'map')
+        dispatch(setMonster({
+          exist: returnValue[0]
+        }))
+        setHaveMonster(returnValue[0])
 
         dispatch(setMapData({map: map_data[0], type: "green",
         ele_description: {
@@ -69,8 +98,8 @@ const Home = () =>{
           ground_bottom_2: [37],
           ground_bottom_3: [38],
           
-          object: [40, 41],
-          sprite: [42, 43],
+          object: [40],
+          sprite: [41],
           old_man: [43],
           fat_man: [44],
     
@@ -221,7 +250,7 @@ const Home = () =>{
       return (
         <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
         <div style={{minHeight: '1px', display: 'flex', marginBottom: '20px', position: 'relative'}}>
-          <Map contractMetadata={contractMetadata}/>
+          <Map />
           {/* <!-- Inputs --> */}
           <div style={{ width: 'calc(20vw - 1rem)', maxHeight: '100vh', marginLeft: '10px'}}>
             {/* { page === 1 && 
@@ -238,6 +267,10 @@ const Home = () =>{
           </div>
         </div>
       <Dialog />
+      <PVPModal />
+      <audio preload="auto" autoPlay loop>     
+        <source src="/assets/music/home.mp3" type="audio/mpeg" />
+      </audio>
       </div>
     )
     } else {

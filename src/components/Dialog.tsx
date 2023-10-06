@@ -1,10 +1,11 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { AnyAction } from 'redux';
-import { setDialog } from "../store/actions";
+import { setDialog, setHero } from "../store/actions";
 
 export default function Dialog(props: any) {
   let dispatch = useDispatch();
   let dialog = useSelector(state => state['dialog']);
+  let hero = useSelector(state => state['hero']);
 
   const closeNoDialog = () => {
     if (dialog.onNo !== undefined) {

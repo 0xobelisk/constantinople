@@ -161,6 +161,15 @@ export default {
     // mapNFT: {
     //   token_id: 0,
     // },
+    contractMetadata: {},
+    sendTxLog: {
+      display: false,
+      content: "",
+      yesContent: "",
+      noContent: "",
+      onYes: null,
+      onNo: null,
+    },
     dialog: {
       display: false,
       content: "",
@@ -172,6 +181,10 @@ export default {
     hero: {
       name: "",
       position: { left: 0, top: 0 },
+      lock: false
+    },
+    monster: {
+      exist: false
     },
     account: {
       address: "",

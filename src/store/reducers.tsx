@@ -56,6 +56,24 @@ function dialog (state = defaultState.dialog, action: any) {
   }
 }
 
+function sendTxLog (state = defaultState.sendTxLog, action: any) {
+  switch (action.type) {
+    case 'SET_SEND_TX_LOG':
+      return action.data
+    default:
+      return state
+  }
+}
+
+function contractMetadata (state = defaultState.contractMetadata, action: any) {
+  switch (action.type) {
+    case 'SET_CONTRACT_METADATA':
+      return action.data
+    default:
+      return state
+  }
+}
+
 // function alert (state = defaultState.alert, action: any) {
 //   switch (action.type) {
 //     case 'SET_ALERT':
@@ -64,6 +82,14 @@ function dialog (state = defaultState.dialog, action: any) {
 //       return state
 //   }
 // }
+function monster (state = defaultState.monster, action: any) {
+  switch (action.type) {
+    case 'SET_MONSTER':
+      return action.data
+    default:
+      return state
+  }
+}
 
 function hero (state = defaultState.hero, action: any) {
   switch (action.type) {
@@ -90,6 +116,9 @@ export default combineReducers({
   // mapSeed,
   // mapNFT,
   dialog,
+  sendTxLog,
+  contractMetadata,
+  monster,
   // alert,
   hero,
   account,

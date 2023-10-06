@@ -1,7 +1,7 @@
-import {DevInspectResults, getMetadata, Obelisk, SuiMoveNormalizedModules, TransactionBlock} from "@0xobelisk/client";
+import {DevInspectResults, getMetadata, Obelisk, SuiMoveNormalizedModules, TransactionBlock, BCS, getSuiMoveConfig} from "@0xobelisk/client";
 import { useEffect, useState, useRef, useMemo, ReactElement } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setDialog } from "../store/actions";
+import { setDialog, setSendTxLog, setHero, setMonster } from "../store/actions";
 // import axios from 'axios';
 import { marked } from 'marked';
 import {NETWORK, PACKAGE_ID, WORLD_ID} from "../chain/config";
@@ -42,8 +42,10 @@ function loadImage(imageUrl){
   let mapData = useSelector(state => state["mapData"]);
   let mapSeed = useSelector(state => state["mapSeed"]);
   let hero = useSelector(state => state["hero"]);
+  let monster = useSelector(state => state["monster"]);
+  const contractMetadata = useSelector(state => state["contractMetadata"])
   
-  const [stepTransactions, setStepTransactions] = useState<string[]>([]);
+  const [stepTransactions, setStepTransactions] = useState<any[][]>([]);
   // let [stepTxB, setStepTxB] = useState<TransactionBlock>(new TransactionBlock());
   let stepTxB1 = new TransactionBlock()
   // fill screen with rows of block
@@ -335,6 +337,7 @@ function loadImage(imageUrl){
     drawOriginalMap();
   });
 
+
   // -------------------- Game Logic --------------------
   const stepLength = 2.5;
   let direction = null;
@@ -342,7 +345,18 @@ function loadImage(imageUrl){
   const mapContainerRef = useRef(null);
   const heroRef = useRef(null);
   const [heroPosition, setHeroPosition] = useState({left: hero['position']['left'], top: hero['position']['top']});
+  // const [heroIsLocked, setHeroIsLocked] = useState(hero['lock']);
+  const [haveMonster, setHaveMonster] = useState(monster['exist']);
   // const [heroPosition, setHeroPosition] = useState({left: 5, top: 5});
+
+  useEffect( () => {
+    if (haveMonster === true) {
+      console.log('have monster')
+      console.log(haveMonster)
+       interactPVP()
+      
+    }
+  }, [haveMonster])
 
   // move moving-block when possible
   const move = async (direction: string, stepLength: number) => {
@@ -351,93 +365,143 @@ function loadImage(imageUrl){
       return;
     }
     const currentPosition = getCoordinate(stepLength);
+
+    console.log(hero['lock'])
+    if (hero['lock']) {
+      console.log("player is locked");
+      return;
+    }
+
     if (willCollide(currentPosition, direction)) {
       console.log("collide");
       return;
     }
     
-    // const obelisk = new Obelisk({
-    //     networkType: NETWORK,
-    //     packageId: PACKAGE_ID,
-    //     metadata: metadata,
-    //     secretKey:PRIVATEKEY
-    // });
     let left: number, top: number;
-    // console.log(stepTxB)
-    // console.log(stepTxB.blockData.transactions)
 
     let stepTransactionsItem = stepTransactions
+    let newPosition = heroPosition;
+
     switch (direction) {
       case 'left':
-        left = heroPosition.left - stepLength;
-        setHeroPosition({...heroPosition, left: left});
-        stepTransactionsItem.push(direction)
+        newPosition.left = heroPosition.left - stepLength;
+        setHeroPosition({...newPosition});
+        stepTransactionsItem.push([newPosition.left/stepLength, newPosition.top/stepLength, direction])
         break;
       case 'top':
-        top = heroPosition.top - stepLength;
-        setHeroPosition({...heroPosition, top: top});
+        newPosition.top = heroPosition.top - stepLength;
+        setHeroPosition({...newPosition});
         scrollIfNeeded('top');
-        stepTransactionsItem.push(direction)
+        stepTransactionsItem.push([newPosition.left/stepLength, newPosition.top/stepLength, direction])
         break;
       case 'right':
-        left = heroPosition.left + stepLength;
-        setHeroPosition({...heroPosition, left: left});
-        stepTransactionsItem.push(direction)
+        newPosition.left = heroPosition.left + stepLength;
+        setHeroPosition({...newPosition});
+        stepTransactionsItem.push([newPosition.left/stepLength, newPosition.top/stepLength, direction])
         break;
       case 'bottom':
-        top = heroPosition.top + stepLength;
-        setHeroPosition({...heroPosition, top: top});
+        newPosition.top = heroPosition.top + stepLength;
+        setHeroPosition({...newPosition});
         scrollIfNeeded('bottom');
-        stepTransactionsItem.push(direction)
+        stepTransactionsItem.push([newPosition.left/stepLength, newPosition.top/stepLength, direction])
         break;
       default:
         break;
     }
     setStepTransactions(stepTransactionsItem)
     console.log(stepTransactionsItem)
+    console.log(mapData.map[newPosition.top/stepLength][newPosition.left/stepLength])
+    console.log(mapData.map[newPosition.top/stepLength][newPosition.left/stepLength] === mapData.ele_description.tussock[0])
+    if (mapData.map[newPosition.top/stepLength][newPosition.left/stepLength] === mapData.ele_description.tussock[0]) {
+      console.log('------------- in tussock')
+      // setHeroIsLocked(true)
 
+      await savingGameWorld(true)
+
+
+      const obelisk = new Obelisk({
+        networkType: NETWORK,
+        packageId: PACKAGE_ID,
+        metadata: contractMetadata,
+        secretKey:PRIVATEKEY
+    });
+
+      let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress())
+
+      let new_tx = new TransactionBlock()
+      let new_params = [
+        new_tx.pure(WORLD_ID),
+        new_tx.pure(obelisk.getAddress())
+      ]
+      const encounter_contain = await obelisk.query.encounter_comp.contains(new_tx, new_params) as DevInspectResults;
+      let returnValue = [];
+
+      if (encounter_contain.effects.status.status === 'success') {
+        let resultList = encounter_contain.results![0].returnValues!;
+        for (let res of resultList) {
+          const bcs = new BCS(getSuiMoveConfig());
+          let value = Uint8Array.from(res[0]);
+          let data = bcs.de(res[1], value);
+          returnValue.push(data);
+        }
+      }
+      if (returnValue[0] === true) {
+        console.log('have monster 11');
+      }
+      console.log(returnValue[0])
+      console.log(JSON.stringify(player_data))
+      const stepLength = 2.5;
+      dispatch(setHero({
+        name: obelisk.getAddress(),
+        position: { left: player_data[0] * stepLength, top: player_data[1] * stepLength },
+        lock: returnValue[0]
+      }))
+      // setHeroIsLocked(!returnValue[0])
+      setHaveMonster(returnValue[0])
+      dispatch(setMonster({
+        exist: returnValue[0]
+      }))
+    }
     if (stepTransactionsItem.length === 100) {
       await savingGameWorld()
     }
   };
 
-  const savingGameWorld = async () => {
-    let stepTransactionsItem = stepTransactions
-    setStepTransactions([])
-    const obelisk = new Obelisk({
-        networkType: NETWORK,
-        packageId: PACKAGE_ID,
-        metadata: props.contractMetadata,
-        secretKey:PRIVATEKEY
-    });
-    const stepTxB = new TransactionBlock()
-
-    let params = [
-      stepTxB.pure(WORLD_ID)
-    ]
-    for (let historyDirection of stepTransactionsItem) {
-      switch (historyDirection) {
-        case 'left':
-          obelisk.tx.move_system.left(stepTxB, params, true) as TransactionBlock
-          break;
-        case 'top':
-          obelisk.tx.move_system.down(stepTxB, params, true) as TransactionBlock
-          break;
-        case 'right':
-          obelisk.tx.move_system.right(stepTxB, params, true) as TransactionBlock
-          break;
-        case 'bottom':
-          obelisk.tx.move_system.up(stepTxB, params, true) as TransactionBlock
-          break;
-        default:
-          break;
-      }
+  const savingGameWorld = async (byLock?: boolean) => {
+    if (byLock === true) {
+      dispatch(setHero({
+        ...hero,
+        lock: true
+      }))
     }
-    
-    const response = await obelisk.signAndSendTxn(
-        stepTxB
-    )
-    console.log(response)
+
+    if (stepTransactions.length !== 0) {
+      let stepTransactionsItem = stepTransactions
+      setStepTransactions([])
+      const obelisk = new Obelisk({
+          networkType: NETWORK,
+          packageId: PACKAGE_ID,
+          metadata: contractMetadata,
+          secretKey:PRIVATEKEY
+      });
+      const stepTxB = new TransactionBlock()
+      let tx_world_id = stepTxB.pure(WORLD_ID)
+  
+      for (let historyDirection of stepTransactionsItem) {
+        let params = [
+          tx_world_id,
+          stepTxB.pure(historyDirection[0]),
+          stepTxB.pure(historyDirection[1])
+        ]
+        obelisk.tx.rpg_system.move_t(stepTxB, params, true) as TransactionBlock
+      }
+      
+      const response = await obelisk.signAndSendTxn(
+          stepTxB
+      )
+      console.log(response)
+    }
+
   }
 
   // check if moving-block will be out of map
@@ -537,7 +601,8 @@ function loadImage(imageUrl){
       // await interactNpc({x: npcX, y: npcY});
       const targetBlock = mapData.map[npcX][npcY];
       if (withinRange(targetBlock, mapData.ele_description.sprite)) {
-        await interactNpc({ x: npcX, y: npcY });
+        // await interactNpc({x: npcX, y: npcY});
+        await interactNpc();
       } else if (withinRange(targetBlock, mapData.ele_description.object)) {
         openTreasureBox({ x: npcX, y: npcY });
       // } else if (withinRange(targetBlock, mapData.ele_description.obelisk_bottom)) {
@@ -585,16 +650,42 @@ function loadImage(imageUrl){
         break;
     }
     const targetBlock = mapData.map[targetPosition.x][targetPosition.y];
+    console.log("---111")
+    console.log(targetBlock)
+    console.log(mapData.ele_description.sprite)
+    console.log(withinRange(targetBlock, mapData.ele_description.sprite))
+    console.log('---10')
+
     if (withinRange(targetBlock, mapData.ele_description.sprite)) {
-      await interactNpc(targetPosition);
+      await interactNpc();
     } else if (withinRange(targetBlock, mapData.ele_description.object)) {
       openTreasureBox(targetPosition);
     } else if (withinRange(targetBlock, mapData.ele_description.obelisk_bottom)) {
-      await interactNpc(targetPosition);
+      console.log('claim')
+      await savingGameWorld(true)
+      await interactNpc();
+
+      dispatch(setHero({
+        ...hero,
+        lock: false
+      }))
     } else if (withinRange(targetBlock, mapData.ele_description.old_man)) {
-      await interactOldManNpc(targetPosition);
+      console.log("-------22")
+      await savingGameWorld(true)
+      await interactOldManNpc();
+
+      dispatch(setHero({
+        ...hero,
+        lock: false
+      }))
     } else if (withinRange(targetBlock, mapData.ele_description.fat_man)) {
-      await interactOldManNpc(targetPosition);
+      await savingGameWorld(true)
+      await interactOldManNpc();
+
+      dispatch(setHero({
+        ...hero,
+        lock: false
+      }))
     } else if (withinRange(targetBlock, mapData.ele_description.big_house_33)) {
       await interactHouseDoor();
     } else if (withinRange(targetBlock, mapData.ele_description.small_house_24)) {
@@ -602,8 +693,8 @@ function loadImage(imageUrl){
     }
   }
 
-  const interactNpc = async (targetPosition) => {
-    const interactResponse = await getInteractResponse(targetPosition, mapSeed.blockNumber);
+  const interactNpc = async () => {
+    const interactResponse = await getInteractResponse();
     console.log(interactResponse)
     // if (interactResponse.error_code === 0) {
       // const dialogContent = interactResponse.result.event.payload.first;
@@ -612,8 +703,8 @@ function loadImage(imageUrl){
     // }
   }
 
-  const interactOldManNpc = async (targetPosition) => {
-    const interactResponse = await getOldManResponse(targetPosition, mapSeed.blockNumber);
+  const interactOldManNpc = async () => {
+    const interactResponse = await getOldManResponse();
     const dialogContent = interactResponse
     showNpcDialog(dialogContent);
   }
@@ -638,6 +729,24 @@ function loadImage(imageUrl){
     })
   }
 
+  const interactPVP = () => {
+    showPVPModalLog({
+      text: "Have monster",
+      btn: {
+        yes: "Throw",
+        no: "go away"
+      }
+    })
+  }
+  const showPVPModalLog = (dialogContent: any) => {
+    // marked.setOptions({
+    //   gfm: true,
+    //   breaks: true,
+    // })
+    dispatch(setSendTxLog({display: true, content: dialogContent.text, yesContent: dialogContent.btn.yes, noContent: dialogContent.btn.no}));
+  }
+
+
   const showNpcDialog = (dialogContent: any) => {
     marked.setOptions({
       gfm: true,
@@ -660,7 +769,7 @@ function loadImage(imageUrl){
     treasureBox.children[0]["src"] = require('../assets/img/block/treasure-unlocked-1.png');
   }
 
-  const getInteractResponse = async (targetPosition, blockNumber) => {
+  const getInteractResponse = async () => {
     const { x, y } = targetPosition;
     
     // let interactApi = `https://indexer.obelisk.build?x=${y}&y=${x}&block_height=${blockNumber}`;
@@ -681,7 +790,7 @@ function loadImage(imageUrl){
     }
   }
 
-  const getOldManResponse = async (targetPosition, blockNumber) => {
+  const getOldManResponse = async () => {
     const { x, y } = targetPosition;
     
     return {
@@ -693,15 +802,8 @@ function loadImage(imageUrl){
     }
   }
 
-
   useEffect(() => {
-    const metadata = {"entity_key":{"fileFormatVersion":6,"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","name":"entity_key","friends":[],"structs":{},"exposedFunctions":{"from_bytes":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Vector":"U8"}],"return":["Address"]},"from_object":{"visibility":"Public","isEntry":false,"typeParameters":[{"abilities":["Store","Key"]}],"parameters":[{"Reference":{"TypeParameter":0}}],"return":["Address"]},"from_position":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":["U64","U64"],"return":["Address"]},"from_u256":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":["U256"],"return":["Address"]}}},"init":{"fileFormatVersion":6,"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","name":"init","friends":[],"structs":{},"exposedFunctions":{}},"map_comp":{"fileFormatVersion":6,"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","name":"map_comp","friends":[{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","name":"move_system"}],"structs":{"CompMetadata":{"abilities":{"abilities":["Store"]},"typeParameters":[],"fields":[{"name":"id","type":"Address"},{"name":"name","type":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}},{"name":"types","type":{"Vector":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}}},{"name":"entity_key_to_index","type":{"Struct":{"address":"0x2","module":"table","name":"Table","typeArguments":["Address","U64"]}}},{"name":"entities","type":{"Struct":{"address":"0x2","module":"table_vec","name":"TableVec","typeArguments":["Address"]}}},{"name":"data","type":{"Struct":{"address":"0x2","module":"table","name":"Table","typeArguments":["Address",{"Vector":"U8"}]}}}]}},"exposedFunctions":{"data":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":[{"Reference":{"Struct":{"address":"0x2","module":"table","name":"Table","typeArguments":["Address",{"Vector":"U8"}]}}}]},"decode":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Vector":"U8"}],"return":[{"Vector":{"Vector":"U8"}}]},"encode":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Vector":{"Vector":"U8"}}],"return":[{"Vector":"U8"}]},"entities":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":[{"Reference":{"Struct":{"address":"0x2","module":"table_vec","name":"TableVec","typeArguments":["Address"]}}}]},"entity_length":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":["U64"]},"get":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":[{"Vector":{"Vector":"U8"}}]},"id":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[],"return":["Address"]},"name":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[],"return":[{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}]},"new":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"map_comp","name":"CompMetadata","typeArguments":[]}}]},"register":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[]},"types":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[],"return":[{"Vector":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}}]},"update":{"visibility":"Friend","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},{"Vector":{"Vector":"U8"}}],"return":[]}}},"movable_comp":{"fileFormatVersion":6,"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","name":"movable_comp","friends":[{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","name":"move_system"}],"structs":{"CompMetadata":{"abilities":{"abilities":["Store"]},"typeParameters":[],"fields":[{"name":"id","type":"Address"},{"name":"name","type":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}},{"name":"types","type":{"Vector":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}}},{"name":"entity_key_to_index","type":{"Struct":{"address":"0x2","module":"table","name":"Table","typeArguments":["Address","U64"]}}},{"name":"entities","type":{"Struct":{"address":"0x2","module":"table_vec","name":"TableVec","typeArguments":["Address"]}}},{"name":"data","type":{"Struct":{"address":"0x2","module":"table","name":"Table","typeArguments":["Address",{"Vector":"U8"}]}}}]}},"exposedFunctions":{"add":{"visibility":"Friend","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address","Bool"],"return":[]},"contains":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":["Bool"]},"data":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":[{"Reference":{"Struct":{"address":"0x2","module":"table","name":"Table","typeArguments":["Address",{"Vector":"U8"}]}}}]},"decode":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Vector":"U8"}],"return":["Bool"]},"encode":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":["Bool"],"return":[{"Vector":"U8"}]},"entities":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":[{"Reference":{"Struct":{"address":"0x2","module":"table_vec","name":"TableVec","typeArguments":["Address"]}}}]},"entity_length":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":["U64"]},"get":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":["Bool"]},"id":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[],"return":["Address"]},"name":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[],"return":[{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}]},"new":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"movable_comp","name":"CompMetadata","typeArguments":[]}}]},"register":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[]},"remove":{"visibility":"Friend","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":[]},"types":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[],"return":[{"Vector":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}}]},"update":{"visibility":"Friend","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address","Bool"],"return":[]}}},"move_system":{"fileFormatVersion":6,"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","name":"move_system","friends":[],"structs":{},"exposedFunctions":{"down":{"visibility":"Public","isEntry":true,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[]},"left":{"visibility":"Public","isEntry":true,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[]},"register":{"visibility":"Public","isEntry":true,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[]},"right":{"visibility":"Public","isEntry":true,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[]},"up":{"visibility":"Public","isEntry":true,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[]}}},"player_comp":{"fileFormatVersion":6,"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","name":"player_comp","friends":[{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","name":"move_system"}],"structs":{"CompMetadata":{"abilities":{"abilities":["Store"]},"typeParameters":[],"fields":[{"name":"id","type":"Address"},{"name":"name","type":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}},{"name":"types","type":{"Vector":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}}},{"name":"entity_key_to_index","type":{"Struct":{"address":"0x2","module":"table","name":"Table","typeArguments":["Address","U64"]}}},{"name":"entities","type":{"Struct":{"address":"0x2","module":"table_vec","name":"TableVec","typeArguments":["Address"]}}},{"name":"data","type":{"Struct":{"address":"0x2","module":"table","name":"Table","typeArguments":["Address",{"Vector":"U8"}]}}}]}},"exposedFunctions":{"add":{"visibility":"Friend","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address","Bool"],"return":[]},"contains":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":["Bool"]},"data":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":[{"Reference":{"Struct":{"address":"0x2","module":"table","name":"Table","typeArguments":["Address",{"Vector":"U8"}]}}}]},"decode":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Vector":"U8"}],"return":["Bool"]},"encode":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":["Bool"],"return":[{"Vector":"U8"}]},"entities":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":[{"Reference":{"Struct":{"address":"0x2","module":"table_vec","name":"TableVec","typeArguments":["Address"]}}}]},"entity_length":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":["U64"]},"get":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":["Bool"]},"id":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[],"return":["Address"]},"name":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[],"return":[{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}]},"new":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"player_comp","name":"CompMetadata","typeArguments":[]}}]},"register":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[]},"remove":{"visibility":"Friend","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":[]},"types":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[],"return":[{"Vector":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}}]},"update":{"visibility":"Friend","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address","Bool"],"return":[]}}},"position_comp":{"fileFormatVersion":6,"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","name":"position_comp","friends":[{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","name":"move_system"}],"structs":{"CompMetadata":{"abilities":{"abilities":["Store"]},"typeParameters":[],"fields":[{"name":"id","type":"Address"},{"name":"name","type":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}},{"name":"types","type":{"Vector":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}}},{"name":"entity_key_to_index","type":{"Struct":{"address":"0x2","module":"table","name":"Table","typeArguments":["Address","U64"]}}},{"name":"entities","type":{"Struct":{"address":"0x2","module":"table_vec","name":"TableVec","typeArguments":["Address"]}}},{"name":"data","type":{"Struct":{"address":"0x2","module":"table","name":"Table","typeArguments":["Address",{"Vector":"U8"}]}}}]}},"exposedFunctions":{"add":{"visibility":"Friend","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address","U64","U64"],"return":[]},"contains":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":["Bool"]},"data":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":[{"Reference":{"Struct":{"address":"0x2","module":"table","name":"Table","typeArguments":["Address",{"Vector":"U8"}]}}}]},"decode":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Vector":"U8"}],"return":["U64","U64"]},"encode":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":["U64","U64"],"return":[{"Vector":"U8"}]},"entities":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":[{"Reference":{"Struct":{"address":"0x2","module":"table_vec","name":"TableVec","typeArguments":["Address"]}}}]},"entity_length":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":["U64"]},"get":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":["U64","U64"]},"get_x":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":["U64"]},"get_y":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":["U64"]},"id":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[],"return":["Address"]},"name":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[],"return":[{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}]},"new":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"position_comp","name":"CompMetadata","typeArguments":[]}}]},"register":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[]},"remove":{"visibility":"Friend","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":[]},"types":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[],"return":[{"Vector":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}}]},"update":{"visibility":"Friend","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address","U64","U64"],"return":[]},"update_x":{"visibility":"Friend","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address","U64"],"return":[]},"update_y":{"visibility":"Friend","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address","U64"],"return":[]}}},"world":{"fileFormatVersion":6,"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","name":"world","friends":[],"structs":{"AdminCap":{"abilities":{"abilities":["Key"]},"typeParameters":[],"fields":[{"name":"id","type":{"Struct":{"address":"0x2","module":"object","name":"UID","typeArguments":[]}}}]},"CompAddField":{"abilities":{"abilities":["Copy","Drop"]},"typeParameters":[],"fields":[{"name":"comp","type":"Address"},{"name":"key","type":"Address"},{"name":"data","type":{"Vector":"U8"}}]},"CompRegister":{"abilities":{"abilities":["Copy","Drop"]},"typeParameters":[],"fields":[{"name":"comp","type":"Address"},{"name":"compname","type":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}},{"name":"types","type":{"Vector":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}}}]},"CompRemoveField":{"abilities":{"abilities":["Copy","Drop"]},"typeParameters":[],"fields":[{"name":"comp","type":"Address"},{"name":"key","type":"Address"}]},"CompUpdateField":{"abilities":{"abilities":["Copy","Drop"]},"typeParameters":[],"fields":[{"name":"comp","type":"Address"},{"name":"key","type":{"Struct":{"address":"0x1","module":"option","name":"Option","typeArguments":["Address"]}}},{"name":"data","type":{"Vector":"U8"}}]},"World":{"abilities":{"abilities":["Store","Key"]},"typeParameters":[],"fields":[{"name":"id","type":{"Struct":{"address":"0x2","module":"object","name":"UID","typeArguments":[]}}},{"name":"name","type":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}},{"name":"description","type":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}},{"name":"comps","type":{"Struct":{"address":"0x2","module":"bag","name":"Bag","typeArguments":[]}}},{"name":"compnames","type":{"Vector":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}}},{"name":"admin","type":{"Struct":{"address":"0x2","module":"object","name":"ID","typeArguments":[]}}},{"name":"version","type":"U64"}]}},"exposedFunctions":{"add_comp":{"visibility":"Public","isEntry":false,"typeParameters":[{"abilities":["Store"]}],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},{"Vector":"U8"},{"TypeParameter":0}],"return":[]},"compnames":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":[{"Vector":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}}]},"contains":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":["Bool"]},"create":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}},{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}},{"MutableReference":{"Struct":{"address":"0x2","module":"tx_context","name":"TxContext","typeArguments":[]}}}],"return":[{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}]},"emit_add_event":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":["Address","Address",{"Vector":"U8"}],"return":[]},"emit_register_event":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Vector":"U8"},{"Vector":{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}}}],"return":[]},"emit_remove_event":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":["Address","Address"],"return":[]},"emit_update_event":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":["Address",{"Struct":{"address":"0x1","module":"option","name":"Option","typeArguments":["Address"]}},{"Vector":"U8"}],"return":[]},"get_comp":{"visibility":"Public","isEntry":false,"typeParameters":[{"abilities":["Store"]}],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":[{"Reference":{"TypeParameter":0}}]},"get_mut_comp":{"visibility":"Public","isEntry":false,"typeParameters":[{"abilities":["Store"]}],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},"Address"],"return":[{"MutableReference":{"TypeParameter":0}}]},"info":{"visibility":"Public","isEntry":false,"typeParameters":[],"parameters":[{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}}],"return":[{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}},{"Struct":{"address":"0x1","module":"ascii","name":"String","typeArguments":[]}},"U64"]},"migrate":{"visibility":"Private","isEntry":true,"typeParameters":[],"parameters":[{"MutableReference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"World","typeArguments":[]}}},{"Reference":{"Struct":{"address":"0x8e14c42fb382bbc9d20c4b0181475896473ed3e2a2affc640b5e3a2c99fbe504","module":"world","name":"AdminCap","typeArguments":[]}}}],"return":[]}}}} as SuiMoveNormalizedModules
-    const obelisk = new Obelisk({
-        networkType: NETWORK,
-        packageId: PACKAGE_ID,
-        metadata: metadata,
-        secretKey:PRIVATEKEY
-    });
+
     const onKeyDown = async (ev: any) => {
       // var ev = ev || event;
       var keyCode = ev.keyCode;
@@ -732,7 +834,7 @@ function loadImage(imageUrl){
           break;
         case 32:
           ev.preventDefault();
-          interact(direction);
+          await interact(direction);
           break;
         case 33: // PageUp
         case 34: // PageDown
@@ -778,7 +880,7 @@ function loadImage(imageUrl){
         document.removeEventListener('keydown', onKeyDown);
         document.removeEventListener('keyup', onKeyUp);
     }
-  }, [mapData, heroPosition, stepTransactions]);
+  }, [mapData, heroPosition, stepTransactions, hero]);
 
   return (
     <>
@@ -820,12 +922,15 @@ function loadImage(imageUrl){
       {stepTransactions.map((value: any, index: any) => (
           <>
           <div>
-            {value}
+            {value[2]}
           </div>
           </>
         ))}
       </div>
 
+      {/* <audio preload="auto" autoPlay loop>     
+        <source src="/assets/music/home.mp3" type="audio/mpeg" />
+      </audio> */}
       </>
   );
 }
