@@ -1,3 +1,4 @@
+import { AppThunk } from './index'
 
 export function setProgress (data: any) {
     return (dispatch: any, getState: any) => {
@@ -29,12 +30,11 @@ export function setProgress (data: any) {
     }
   }
   
-  export function setDialog (data: any) {
-    return (dispatch: any, getState: any) => {
+  export const setDialog = (data: any) => 
+  (dispatch: any, getState: any) => {
       dispatch({ type: 'SET_DIALOG', data: data })
-    }
   }
-  
+
   export function setAlert (data: any) {
     return (dispatch: any, getState: any) => {
       dispatch({ type: 'SET_ALERT', data: data })

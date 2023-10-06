@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
+import { AnyAction } from 'redux';
 import { setDialog } from "../store/actions";
 
 export default function Dialog(props: any) {
@@ -6,7 +7,9 @@ export default function Dialog(props: any) {
   let dialog = useSelector(state => state['dialog']);
 
   const closeNoDialog = () => {
-    if (dialog.onNo !== undefined) { dialog.onNo(); }
+    if (dialog.onNo !== undefined) {
+      dialog.onNo();
+    }
     dispatch(setDialog({ ...dialog, display: false }));
   }
 

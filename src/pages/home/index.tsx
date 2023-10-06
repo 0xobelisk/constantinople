@@ -1,6 +1,5 @@
 import {DevInspectResults, getMetadata, Obelisk, TransactionBlock} from "@0xobelisk/client";
 import {useEffect, useState} from "react";
-import {useAtom} from "jotai";
 import { Map, Dialog } from "../../components";
 import {Value} from "../../jotai";
 import { useRouter } from "next/router";
@@ -10,21 +9,14 @@ import {obeliskConfig} from "../../../obelisk.config";
 import PRIVATEKEY from "../../chain/key";
 import { setHero, setMapData } from "../../store/actions"
 
-type data = {
-    type:string;
-    fields:Record<string, any>;
-    hasPublicTransfer:boolean;
-    dataType:"moveObject";
-}
-
 const Home = () =>{
   let dispatch = useDispatch();
     const router = useRouter()
-    const [value,setValue] = useAtom(Value)
     const [isLoading, setIsLoading] = useState(false)
-
+    const [contractMetadata, setContractMetadata] = useState()
     const rpgworld = async () => {
         const metadata = await getMetadata(NETWORK, PACKAGE_ID);
+        setContractMetadata(metadata)
         const obelisk = new Obelisk({
             networkType: NETWORK,
             packageId: PACKAGE_ID,
@@ -32,15 +24,28 @@ const Home = () =>{
             secretKey:PRIVATEKEY
         });
 
+        
+        console.log(obelisk.getAddress());
+        let player_data = []
+        try {
+          player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress())
+        } catch {
+          
+        }
+        if (player_data.length === 0) {
+          const tx = new TransactionBlock()
+          const params = [
+            tx.pure(WORLD_ID)
+          ]
+          await obelisk.tx.move_system.register(tx, params)
+        }
 
-        const player_id = "0xa9288f6ebe5ea276cd64230458d0c6c80725ca4c0dfc42a6d4af08a96832c52c"
-        const player_data = await obelisk.getEntity(WORLD_ID, 'position', player_id)
         console.log(player_data)
         console.log(JSON.stringify(player_data))
         const stepLength = 2.5;
         console.log( player_data[0] * stepLength)
         dispatch(setHero({
-          name: player_id,
+          name: obelisk.getAddress(),
           position: { left: player_data[0] * stepLength, top: player_data[1] * stepLength },
         }))
     
@@ -49,24 +54,26 @@ const Home = () =>{
 
         dispatch(setMapData({map: map_data[0], type: "green",
         ele_description: {
-          walkable: [0],
+          walkable: [0, 39],
+          green: [0],
           tussock: [20],
           flower: [22],
+
+          ground_top_1: [30],
+          ground_top_2: [31],
+          ground_top_3: [32],
+          ground_middle_1: [33],
+          ground_middle_2: [34],
+          ground_middle_3: [35],
+          ground_bottom_1: [36],
+          ground_bottom_2: [37],
+          ground_bottom_3: [38],
           
           object: [40, 41],
           sprite: [42, 43],
           old_man: [43],
           fat_man: [44],
     
-          ground_top_1: [50],
-          ground_top_2: [51],
-          ground_top_3: [52],
-          ground_middle_1: [53],
-          ground_middle_2: [54],
-          ground_middle_3: [55],
-          ground_bottom_1: [56],
-          ground_bottom_2: [57],
-          ground_bottom_3: [58],
     
           water_top_1: [60],
           water_top_2: [61],
@@ -87,7 +94,7 @@ const Home = () =>{
     
           tree_top: [80],
           tree_bottom: [81],
-          unwalkable: [83],
+          small_tree: [83],
           rocks: [84],
     
           big_house_1: [100],
@@ -214,7 +221,7 @@ const Home = () =>{
       return (
         <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
         <div style={{minHeight: '1px', display: 'flex', marginBottom: '20px', position: 'relative'}}>
-          <Map />
+          <Map contractMetadata={contractMetadata}/>
           {/* <!-- Inputs --> */}
           <div style={{ width: 'calc(20vw - 1rem)', maxHeight: '100vh', marginLeft: '10px'}}>
             {/* { page === 1 && 
@@ -232,16 +239,6 @@ const Home = () =>{
         </div>
       <Dialog />
       </div>
-        // <div>
-        //     <div>
-        //         Counter: {value}
-        //     </div>
-        //     <div>
-        //         <button onClick={()=>{
-        //             counter()
-        //         }}>Counter++</button>
-        //     </div>
-        // </div>
     )
     } else {
       <></>

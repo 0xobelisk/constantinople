@@ -2,12 +2,12 @@
 # yarn lockfile v1
 
 
-"@0xobelisk/cli@^0.2.6":
-  version "0.2.9"
-  resolved "https://registry.npmjs.org/@0xobelisk/cli/-/cli-0.2.9.tgz#27a438c28f8e4cff72fa27f4d9c0081484498a2f"
-  integrity sha512-/hVNhx7UZsHb5jpyj63bfjegeLWIlIk+b0cto0k2v2Ei3HgQWsHvV+PPyV8EzwC3OmPclkxozKT4naQL1L/3iQ==
+"@0xobelisk/cli@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.npmjs.org/@0xobelisk/cli/-/cli-0.3.1.tgz#32412fe4262a068d1efae9196bded8d8790bb047"
+  integrity sha512-4JTHzP5Zpcrdc7npk51GGfrMGsTDGZvIdDvTnMByNbPyxnEXFMg6rRCbrw8t4pMfQ3lJAoSZ8GIdAL+JMNLUsA==
   dependencies:
-    "@0xobelisk/common" "^0.2.9"
+    "@0xobelisk/common" "^0.3.0"
     "@mysten/sui.js" "^0.41.0"
     chalk "^5.0.1"
     child_process "^1.0.2"
@@ -30,10 +30,10 @@
     zod "^3.21.4"
     zod-validation-error "^1.3.0"
 
-"@0xobelisk/client@^0.2.6":
-  version "0.2.9"
-  resolved "https://registry.npmjs.org/@0xobelisk/client/-/client-0.2.9.tgz#160ef6ec57e4ba0e53e130df57f180148fd3ee53"
-  integrity sha512-nwnOlB1xw72ln3gxmCWOUIoxZNTrNXJhr0fW9f+mMOGnlnNtdmJIXMNUSQxEs83i2SM7SD1faKZ1o23q/8h9MA==
+"@0xobelisk/client@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.npmjs.org/@0xobelisk/client/-/client-0.3.1.tgz#868fc2eebec4213fe25f3d4cd7022077c2a38ae9"
+  integrity sha512-BZ61NcV8ztcxv5zibrh89+OGmvvlb4idySXsmXY8wjhUVEQGW5x++pqNf+9YMFnOauOLXM2jbdlaZyc0EKDfbw==
   dependencies:
     "@mysten/bcs" "^0.7.3"
     "@mysten/sui.js" "^0.41.0"
@@ -47,10 +47,10 @@
     tmp "^0.2.1"
     ts-retry-promise "^0.7.0"
 
-"@0xobelisk/common@^0.2.6", "@0xobelisk/common@^0.2.9":
-  version "0.2.9"
-  resolved "https://registry.npmjs.org/@0xobelisk/common/-/common-0.2.9.tgz#95bd6825f6e613126cef9df6ce9f5fdd576c2718"
-  integrity sha512-amwMaJq8uUVHaIwp8SlTULscyYMv3t5IesxQfeIwjCcm3LwXIExxeN4ZYtssjvbVoIeSyhkGdFrUXd6mySRRqQ==
+"@0xobelisk/common@^0.3.0", "@0xobelisk/common@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.npmjs.org/@0xobelisk/common/-/common-0.3.1.tgz#299ac427b709cd3376bcc7d7f1a94cbf1db11a48"
+  integrity sha512-qzU99/n88np2pfTUaPNSalZ6ojEEN1G0s/DuMT7qP4o9x/lOHWqXR8A+R/hO/AUXvRGpBDndLLCTMpWRBc/vwQ==
   dependencies:
     "@mysten/sui.js" "^0.41.0"
     chalk "^5.0.1"
@@ -1074,7 +1074,7 @@
   resolved "https://registry.npmjs.org/@babel/regjsgen/-/regjsgen-0.8.0.tgz#f0ba69b075e1f05fb2825b7fad991e7adbb18310"
   integrity sha512-x/rqGMdzj+fWZvCOYForTghzbtqPDZ5gPwaoNGHdgDfF2QA/XZbCBp4Moo5scrkAMPhB7z26XM/AaHuIJdgauA==
 
-"@babel/runtime@^7.12.0", "@babel/runtime@^7.12.5", "@babel/runtime@^7.13.10", "@babel/runtime@^7.14.5", "@babel/runtime@^7.15.4", "@babel/runtime@^7.17.2", "@babel/runtime@^7.18.3", "@babel/runtime@^7.18.6", "@babel/runtime@^7.20.7", "@babel/runtime@^7.5.5", "@babel/runtime@^7.6.2", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.12.0", "@babel/runtime@^7.12.1", "@babel/runtime@^7.12.5", "@babel/runtime@^7.13.10", "@babel/runtime@^7.14.5", "@babel/runtime@^7.17.2", "@babel/runtime@^7.18.3", "@babel/runtime@^7.18.6", "@babel/runtime@^7.20.7", "@babel/runtime@^7.5.5", "@babel/runtime@^7.6.2", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
   version "7.23.1"
   resolved "https://registry.npmjs.org/@babel/runtime/-/runtime-7.23.1.tgz#72741dc4d413338a91dcb044a86f3c0bc402646d"
   integrity sha512-hC2v6p8ZSI/W0HUzh3V8C5g+NwSKzKPtJwSpTjwl0o297GP9+ZLQSkdvHz46CM3LqyoXxq+5G9komY+eSqSO0g==
@@ -2089,10 +2089,10 @@
   dependencies:
     "@babel/runtime" "^7.13.10"
 
-"@reduxjs/toolkit@^1.7.2":
-  version "1.9.6"
-  resolved "https://registry.npmjs.org/@reduxjs/toolkit/-/toolkit-1.9.6.tgz#fc968b45fe5b17ff90932c4556960d9c1078365a"
-  integrity sha512-Gc4ikl90ORF4viIdAkY06JNUnODjKfGxZRwATM30EdHq8hLSVoSrwXne5dd739yenP5bJxAX7tLuOWK5RPGtrw==
+"@reduxjs/toolkit@^1.9.7":
+  version "1.9.7"
+  resolved "https://registry.npmjs.org/@reduxjs/toolkit/-/toolkit-1.9.7.tgz#7fc07c0b0ebec52043f8cb43510cf346405f78a6"
+  integrity sha512-t7v8ZPxhhKgOKtU+uyJT13lu4vL7az5aFi4IdoDs/eS548edn2M8Ik9h8fxgvMjGoAUVFSt6ZC1P5cWmQ014QQ==
   dependencies:
     immer "^9.0.21"
     redux "^4.2.1"
@@ -2546,7 +2546,7 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-redux@^7.1.20":
+"@types/react-redux@^7.1.27":
   version "7.1.27"
   resolved "https://registry.npmjs.org/@types/react-redux/-/react-redux-7.1.27.tgz#1afb31f7354bf787e162c10ff3fa19bafa9e6b57"
   integrity sha512-xj7d9z32p1K/eBmO+OEy+qfaWXtcPlN8f1Xk3Ne0p/ZRQ867RI5bQ/bpBtxbqU1AHNhKJSgGvld/P2myU2uYkg==
@@ -2597,6 +2597,11 @@
   integrity sha512-FSYhIjFlfOpGSRyVoMBMuS3ws5ehFQODymf3vlI7U1K8c7PHwWwFY7VREfmsuzHSOnoKs/9/Y983ayOs7eRzqw==
   dependencies:
     "@types/jest" "*"
+
+"@types/use-sync-external-store@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.npmjs.org/@types/use-sync-external-store/-/use-sync-external-store-0.0.3.tgz#b6725d5f4af24ace33b36fafd295136e75509f43"
+  integrity sha512-EwmlvuaxPNej9+T4v5AuBPJa2x2UOJVdjCtDHgcDqitUeOtjnJKJ+apYjVcAoBEMjKW1VVFGZLUb5+qqa09XFA==
 
 "@types/yargs-parser@*":
   version "21.0.1"
@@ -6357,7 +6362,7 @@ prompts@^2.0.1:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@^15.5.0, prop-types@^15.6.0, prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.1:
+prop-types@^15.5.0, prop-types@^15.6.0, prop-types@^15.6.2, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.npmjs.org/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -6428,7 +6433,7 @@ react-is@^16.13.1, react-is@^16.7.0:
   resolved "https://registry.npmjs.org/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
-react-is@^17.0.1, react-is@^17.0.2:
+react-is@^17.0.1:
   version "17.0.2"
   resolved "https://registry.npmjs.org/react-is/-/react-is-17.0.2.tgz#e691d4a8e9c789365655539ab372762b0efb54f0"
   integrity sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
@@ -6447,17 +6452,17 @@ react-query@^3.39.2:
     broadcast-channel "^3.4.1"
     match-sorter "^6.0.2"
 
-react-redux@^7.2.6:
-  version "7.2.9"
-  resolved "https://registry.npmjs.org/react-redux/-/react-redux-7.2.9.tgz#09488fbb9416a4efe3735b7235055442b042481d"
-  integrity sha512-Gx4L3uM182jEEayZfRbI/G11ZpYdNAnBs70lFVMNdHJI76XYtR+7m0MN+eAs7UHBPhWXcnFPaS+9owSCJQHNpQ==
+react-redux@^8.1.3:
+  version "8.1.3"
+  resolved "https://registry.npmjs.org/react-redux/-/react-redux-8.1.3.tgz#4fdc0462d0acb59af29a13c27ffef6f49ab4df46"
+  integrity sha512-n0ZrutD7DaX/j9VscF+uTALI3oUPa/pO4Z3soOBIjuRn/FzVu6aehhysxZCLi6y7duMf52WNZGMl7CtuK5EnRw==
   dependencies:
-    "@babel/runtime" "^7.15.4"
-    "@types/react-redux" "^7.1.20"
+    "@babel/runtime" "^7.12.1"
+    "@types/hoist-non-react-statics" "^3.3.1"
+    "@types/use-sync-external-store" "^0.0.3"
     hoist-non-react-statics "^3.3.2"
-    loose-envify "^1.4.0"
-    prop-types "^15.7.2"
-    react-is "^17.0.2"
+    react-is "^18.0.0"
+    use-sync-external-store "^1.0.0"
 
 react-remove-scroll-bar@^2.3.3:
   version "2.3.4"
@@ -7459,7 +7464,7 @@ use-sidecar@^1.1.2:
     detect-node-es "^1.1.0"
     tslib "^2.0.0"
 
-use-sync-external-store@1.2.0:
+use-sync-external-store@1.2.0, use-sync-external-store@^1.0.0:
   version "1.2.0"
   resolved "https://registry.npmjs.org/use-sync-external-store/-/use-sync-external-store-1.2.0.tgz#7dbefd6ef3fe4e767a0cf5d7287aacfb5846928a"
   integrity sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==
