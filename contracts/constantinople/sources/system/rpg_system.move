@@ -1,13 +1,14 @@
 module constantinople::rpg_system {
     use std::vector;
-    use constantinople::ownedmonsters_comp;
+    use constantinople::catch_result_comp;
+    use constantinople::owned_monsters_comp;
     use constantinople::monster_comp;
     use sui::address;
-    use constantinople::randomseed_comp;
+    use constantinople::random_seed_comp;
     use sui::hash::keccak256;
     use sui::bcs;
     use constantinople::encounterable_comp;
-    use constantinople::encountertrigger_comp;
+    use constantinople::encounter_trigger_comp;
     use constantinople::encounter_comp;
     use constantinople::obstruction_comp;
     use constantinople::entity_key;
@@ -18,6 +19,8 @@ module constantinople::rpg_system {
     use constantinople::player_comp;
     use sui::tx_context;
     use sui::tx_context::TxContext;
+    #[test_only]
+    use std::debug;
     #[test_only]
     use constantinople::init;
     #[test_only]
@@ -30,33 +33,34 @@ module constantinople::rpg_system {
     const Missed: u8 = 2;
 
     public entry fun init_map(world: &mut World) {
-        let map = map_comp::get(world);
-
-        let height = vector::length(&map);
-        let width = vector::length(vector::borrow(&map, 0));
+        let (width, height, terrain) = map_comp::get(world);
 
         let y = 0;
         while (y < height) {
             let x = 0;
             while (x < width) {
-                let value = *vector::borrow(vector::borrow(&map, y), x);
+                let value = *vector::borrow(vector::borrow(&terrain, y), x);
                 let entity = entity_key::from_position(x, y);
                 if (value == 20) {
-                    encountertrigger_comp::add(world, entity, true);
+                    encounter_trigger_comp::set(world, entity, true);
                 };
                 if (value >= 40) {
-                    obstruction_comp::add(world, entity, true);
+                    obstruction_comp::set(world, entity, true);
                 };
                 x = x + 1;
             };
             y = y + 1;
         };
-
-        map_comp::update(world, map);
     }
 
     public entry fun register(world: &mut World, x: u64, y: u64, ctx: &mut TxContext) {
         let player = tx_context::sender(ctx);
+
+        // error constrain position to map size
+        let (width, height, _) = map_comp::get(world);
+        assert!(x >= 0 && x <= width, 0);
+        assert!(y >= 0 && x <= height, 0);
+
         // error already register
         assert!(!player_comp::contains(world, player), 0);
 
@@ -64,18 +68,24 @@ module constantinople::rpg_system {
         // error this space is obstructed
         assert!(!obstruction_comp::contains(world, position), 0);
 
-        player_comp::add(world, player, true);
-        position_comp::add(world, player, x, y);
-        movable_comp::add(world, player, true);
-        encounterable_comp::add(world, player, true);
+        player_comp::set(world, player, true);
+        position_comp::set(world, player, x, y);
+        movable_comp::set(world, player, true);
+        encounterable_comp::set(world, player, true);
     }
 
-    public fun move_t(world: &mut World, x: u64, y: u64, ctx: &mut TxContext): bool {
+    public entry fun move_t(world: &mut World, x: u64, y: u64, ctx: &mut TxContext) {
         let player = tx_context::sender(ctx);
+
+        // error constrain position to map size
+        let (width, height, _) = map_comp::get(world);
+        assert!(x >= 0 && x <= width, 0);
+        assert!(y >= 0 && x <= height, 0);
+
         // error cannot move
         assert!(movable_comp::get(world, player), 0);
 
-        // // error cannot move during an encounter
+        // error cannot move during an encounter
         assert!(!encounter_comp::contains(world, player), 0);
 
         let (from_x, from_y) = position_comp::get(world, player);
@@ -86,19 +96,17 @@ module constantinople::rpg_system {
         // error this space is obstructed
         assert!(!obstruction_comp::contains(world, position), 0);
 
-        position_comp::update(world, player, x, y);
+        position_comp::set(world, player, x, y);
 
-        if (encounterable_comp::contains(world, player) && encountertrigger_comp::contains(world, position)) {
+        if (encounterable_comp::contains(world, player) && encounter_trigger_comp::contains(world, position)) {
             let (random, monster) = random(world, player, position);
             if (random % 3 == 0) {
                 start_encounter(world, player, monster);
-                return true
             };
         };
-        return false
     }
 
-    public fun throw_ball(world: &mut World, ctx: &mut TxContext): u8 {
+    public entry fun throw_ball(world: &mut World, ctx: &mut TxContext) {
         let player = tx_context::sender(ctx);
         // error not in encounter
         assert!(encounter_comp::contains(world, player), 0);
@@ -108,24 +116,24 @@ module constantinople::rpg_system {
         if (random % 2 == 0) {
             // 50% chance to catch monster
             // MonsterCatchAttempt.emitEphemeral(player, MonsterCatchResult.Caught);
-            if(ownedmonsters_comp::contains(world, player)) {
-                let owned_monsters = ownedmonsters_comp::get(world, player);
+            if(owned_monsters_comp::contains(world, player)) {
+                let owned_monsters = owned_monsters_comp::get(world, player);
                 vector::push_back(&mut owned_monsters, monster);
-                ownedmonsters_comp::update(world, player, owned_monsters);
+                owned_monsters_comp::set(world, player, owned_monsters);
             } else {
-                ownedmonsters_comp::add(world, player, vector[monster]);
+                owned_monsters_comp::set(world, player, vector[monster]);
             };
             encounter_comp::remove(world, player);
-            Caught
+            catch_result_comp::emit_catch_result(Caught);
         } else if (catch_attempts >= 2) {
             // Missed 2 times, monster escapes
             monster_comp::remove(world, monster);
             encounter_comp::remove(world, player);
-            Fled
+            catch_result_comp::emit_catch_result(Fled);
         } else {
             // Throw missed!
-            encounter_comp::update_catchAttempts(world, player, catch_attempts + 1);
-            Missed
+            encounter_comp::set_catch_attempts(world, player, catch_attempts + 1);
+            catch_result_comp::emit_catch_result(Missed);
         }
     }
 
@@ -143,8 +151,8 @@ module constantinople::rpg_system {
 
     fun start_encounter(world: &mut World, player: address, monster: address) {
         let monster_type = bytes_to_u64(address::to_bytes(monster)) % 3;
-        monster_comp::add(world, monster, monster_type);
-        encounter_comp::add(world, player, true, monster, 0);
+        monster_comp::set(world, monster, monster_type);
+        encounter_comp::set(world, player, true, monster, 0);
     }
 
     fun distance(from_x: u64, from_y: u64, to_x: u64, to_y: u64) : u64 {
@@ -154,8 +162,8 @@ module constantinople::rpg_system {
     }
 
     fun random(world: &mut World, player: address, position: address): (u64, address) {
-        let random_seed = randomseed_comp::get(world);
-        randomseed_comp::update(world, random_seed+1);
+        let random_seed = random_seed_comp::get(world);
+        random_seed_comp::set(world, random_seed+1);
         let v = vector::empty<u8>();
         vector::append(&mut v, bcs::to_bytes(&player));
         vector::append(&mut v, bcs::to_bytes(&position));
@@ -207,10 +215,9 @@ module constantinople::rpg_system {
         move_t(&mut world, 9, 2, test_scenario::ctx(scenario));
 
         test_scenario::next_tx(scenario,@0x551fda20060670358846d6ce061454d71dd2b174734010cca22aa378b672e736);
-        let r = throw_ball(&mut world, test_scenario::ctx(scenario));
-        debug::print(&r);
+        throw_ball(&mut world, test_scenario::ctx(scenario));
 
-        let r = ownedmonsters_comp::get(&mut world, @0x551fda20060670358846d6ce061454d71dd2b174734010cca22aa378b672e736);
+        let r = owned_monsters_comp::get(&mut world, @0x551fda20060670358846d6ce061454d71dd2b174734010cca22aa378b672e736);
         debug::print(&r);
 
         test_scenario::next_tx(scenario,@0x551fda20060670358846d6ce061454d71dd2b174734010cca22aa378b672e736);

@@ -45,7 +45,7 @@ module constantinople::world {
         let admin = AdminCap {
             id: object::new(ctx),
         };
-        let world = World {
+        let _obelisk_world = World {
             id: object::new(ctx),
             name,
             description,
@@ -55,45 +55,45 @@ module constantinople::world {
             version: VERSION
         };
         transfer::transfer(admin, tx_context::sender(ctx));
-        world
+        _obelisk_world
     }
 
-    public fun info(world: &World): (String, String, u64) {
-        (world.name, world.description, world.version)
+    public fun info(_obelisk_world: &World): (String, String, u64) {
+        (_obelisk_world.name, _obelisk_world.description, _obelisk_world.version)
+    }
+    
+    public fun compnames(_obelisk_world: &World): vector<String> {
+        _obelisk_world.compnames
     }
 
-    public fun compnames(world: &World): vector<String> {
-        world.compnames
+    public fun get_comp<T : store>(_obelisk_world: &World, id: address): &T {
+        assert!(_obelisk_world.version == VERSION, EWrongVersion);
+        assert!(bag::contains(&_obelisk_world.comps, id), ECompDoesNotExist);
+        bag::borrow<address, T>(&_obelisk_world.comps, id)
     }
 
-    public fun get_comp<T : store>(world: &World, id: address): &T {
-        assert!(world.version == VERSION, EWrongVersion);
-        assert!(bag::contains(&world.comps, id), ECompDoesNotExist);
-        bag::borrow<address, T>(&world.comps, id)
+    public fun get_mut_comp<T : store>(_obelisk_world: &mut World, id: address): &mut T {
+        assert!(_obelisk_world.version == VERSION, EWrongVersion);
+        assert!(bag::contains(&_obelisk_world.comps, id), ECompDoesNotExist);
+        bag::borrow_mut<address, T>(&mut _obelisk_world.comps, id)
     }
 
-    public fun get_mut_comp<T : store>(world: &mut World, id: address): &mut T {
-        assert!(world.version == VERSION, EWrongVersion);
-        assert!(bag::contains(&world.comps, id), ECompDoesNotExist);
-        bag::borrow_mut<address, T>(&mut world.comps, id)
-    }
-
-    public fun add_comp<T : store>(world: &mut World, component_name: vector<u8>, component: T){
-        assert!(world.version == VERSION, EWrongVersion);
+    public fun add_comp<T : store>(_obelisk_world: &mut World, component_name: vector<u8>, component: T){
+        assert!(_obelisk_world.version == VERSION, EWrongVersion);
         let id = entity_key::from_bytes(component_name);
-        assert!(!bag::contains(&world.comps, id), ECompAlreadyExists);
-        vector::push_back(&mut world.compnames, string(component_name));
-        bag::add<address,T>(&mut world.comps, id, component);
+        assert!(!bag::contains(&_obelisk_world.comps, id), ECompAlreadyExists);
+        vector::push_back(&mut _obelisk_world.compnames, string(component_name));
+        bag::add<address,T>(&mut _obelisk_world.comps, id, component);
     }
 
-    public fun contains(world: &mut World, id: address): bool {
-        assert!(world.version == VERSION, EWrongVersion);
-        bag::contains(&mut world.comps, id)
+    public fun contains(_obelisk_world: &mut World, id: address): bool {
+        assert!(_obelisk_world.version == VERSION, EWrongVersion);
+        bag::contains(&mut _obelisk_world.comps, id)
     }
 
-    entry fun migrate(world: &mut World, admin_cap: &AdminCap) {
-        assert!(world.admin == object::id(admin_cap), ENotAdmin);
-        assert!(world.version < VERSION, ENotUpgrade);
-        world.version = VERSION;
+    entry fun migrate(_obelisk_world: &mut World, admin_cap: &AdminCap) {
+        assert!(_obelisk_world.admin == object::id(admin_cap), ENotAdmin);
+        assert!(_obelisk_world.version < VERSION, ENotUpgrade);
+        _obelisk_world.version = VERSION;
     }
 }
