@@ -1,5 +1,3 @@
-import { AppThunk } from './index'
-
 export function setProgress (data: any) {
     return (dispatch: any, getState: any) => {
       dispatch({ type: 'SET_PROGRESS', data: data })

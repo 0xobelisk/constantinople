@@ -6,6 +6,7 @@ import {NETWORK, PACKAGE_ID, WORLD_ID} from "../chain/config";
 import PRIVATEKEY from "../chain/key";
 
 export default function PVPModal(props: any) {
+  const catchResult = ["Catch monster successed!", "Monster got away.", "Catch miss"]
   let dispatch = useDispatch();
   let sendTxLog = useSelector(state => state['sendTxLog']);
   const contractMetadata = useSelector(state => state["contractMetadata"])
@@ -39,36 +40,19 @@ export default function PVPModal(props: any) {
 
     let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress())
 
-    let new_tx = new TransactionBlock()
-    let new_params = [
-      new_tx.pure(WORLD_ID),
-      new_tx.pure(obelisk.getAddress())
-    ]
-    const encounter_contain = await obelisk.query.encounter_comp.contains(new_tx, new_params) as DevInspectResults;
-    let returnValue = [];
-
-    if (encounter_contain.effects.status.status === 'success') {
-      let resultList = encounter_contain.results![0].returnValues!;
-      for (let res of resultList) {
-        const bcs = new BCS(getSuiMoveConfig());
-        let value = Uint8Array.from(res[0]);
-        let data = bcs.de(res[1], value);
-        returnValue.push(data);
-      }
-    }
-    // if (returnValue[0] === )
-    console.log(returnValue[0])
+    const encounter_contain = await obelisk.containEntity(WORLD_ID, "encounter", obelisk.getAddress())
+    console.log(encounter_contain)
     console.log(JSON.stringify(player_data))
     const stepLength = 2.5;
     dispatch(setHero({
       name: obelisk.getAddress(),
       position: { left: player_data[0] * stepLength, top: player_data[1] * stepLength },
-      lock: returnValue[0]
+      lock: encounter_contain
     }))
     dispatch(setMonster({
-      exist: returnValue[0]
+      exist: encounter_contain
     }))
-    if (returnValue[0] === false) {
+    if (encounter_contain === false) {
       dispatch(setSendTxLog({ ...sendTxLog, display: false }));
     }
     // if (sendTxLog.onNo !== undefined) {
@@ -107,53 +91,51 @@ export default function PVPModal(props: any) {
         tx
       )
       console.log(response)
-    // }
-
-    let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress())
-
-    let new_tx = new TransactionBlock()
-    let new_params = [
-      new_tx.pure(WORLD_ID),
-      new_tx.pure(obelisk.getAddress())
-    ]
-    const encounter_contain = await obelisk.query.encounter_comp.contains(new_tx, new_params) as DevInspectResults;
-    let returnValue = [];
-
-    if (encounter_contain.effects.status.status === 'success') {
-      let resultList = encounter_contain.results![0].returnValues!;
-      for (let res of resultList) {
-        const bcs = new BCS(getSuiMoveConfig());
-        let value = Uint8Array.from(res[0]);
-        let data = bcs.de(res[1], value);
-        returnValue.push(data);
-      }
+    let catch_result = -1
+    if (response.effects.status.status === 'success') {
+      response.events.map((event) => {
+        if (event.parsedJson['_obelisk_schema_name'] === 'catch_result') {
+          catch_result = event.parsedJson['data']['value']
+        }
+      })
+    } else {
+      alert("Fetch sui api failed.")
     }
-    // if (returnValue[0] === )
-    console.log(returnValue[0])
+      let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress())
+
+    const encounter_contain = await obelisk.containEntity(WORLD_ID, "encounter", obelisk.getAddress())
+    console.log(encounter_contain)
     console.log(JSON.stringify(player_data))
     const stepLength = 2.5;
     dispatch(setHero({
       name: obelisk.getAddress(),
       position: { left: player_data[0] * stepLength, top: player_data[1] * stepLength },
-      lock: returnValue[0]
+      lock: encounter_contain
     }))
     dispatch(setMonster({
-      exist: returnValue[0]
+      exist: encounter_contain
     }))
-    if (returnValue[0] === false) {
+    if (encounter_contain === false) {
       dispatch(setSendTxLog({ ...sendTxLog, display: false }));
       console.log("catch successed")
     } else {
       console.log("catch failed")
     }
+    alert(catchResult[catch_result])
+
   }
 
   return (
-    <div className="dialog" hidden={!sendTxLog.display}>
-      <div className="dialog-content" dangerouslySetInnerHTML={{ __html: sendTxLog.content }}></div>
-      <div className="dialog-actions">
-        <div className="dialog-action-no" hidden={sendTxLog.noContent === '' || sendTxLog.noContent === undefined} onClick={() => handleNoTxLog()}>{sendTxLog.noContent}</div>
-        <div className="dialog-action-yes" hidden={sendTxLog.yesContent === '' || sendTxLog.yesContent === undefined} onClick={() => handleYesTxLog()}>{sendTxLog.yesContent}</div>
+    <div className="pvp-modal" hidden={!sendTxLog.display}>
+      {/* <div className="dialog-content" dangerouslySetInnerHTML={{ __html: sendTxLog.content }}></div> */}
+      <div className="pvp-modal-content">
+        Have monster
+      <img src="assets/monster/gui.jpg"/>
+      </div>
+
+      <div className="pvp-modal-actions">
+        <div className="pvp-modal-action-no" hidden={sendTxLog.noContent === '' || sendTxLog.noContent === undefined} onClick={() => handleNoTxLog()}>{sendTxLog.noContent}</div>
+        <div className="pvp-modal-action-yes" hidden={sendTxLog.yesContent === '' || sendTxLog.yesContent === undefined} onClick={() => handleYesTxLog()}>{sendTxLog.yesContent}</div>
       </div>
     </div>
   );

@@ -207,6 +207,7 @@ progress {
   transform: translate(-50%, -50%);
   width: 18em;
   background-color: rgba(100, 100, 100, 0.5);
+  z-index: 1000;
 }
 
 .dialog.hidden {
@@ -296,4 +297,75 @@ progress {
   font-weight: bold;
 
   overflow: hidden;    /*隐藏超出范围的图片*/
+}
+
+
+/* 对话框 */
+.pvp-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 18em;
+  background-color: rgba(100, 100, 100, 0.5);
+  z-index: 1000;
+}
+
+.pvp-modal.hidden {
+  display: none;
+}
+
+.pvp-modal-content {
+  border: 1px solid;
+  padding: 1.2em 0.9em;
+  font-size: 1.1em;
+}
+
+.pvp-modal-content img {
+  margin-top: 5px;
+  width: 5vw;
+
+  max-width: 100%; /* 图片宽度最大不超过容器宽度 */
+  max-height: 100%; /* 图片高度最大不超过容器高度 */
+  /* 可选，使图片在容器中居中，不会超出容器 */
+  object-fit: contain;
+}
+
+
+.pvp-modal-content p {
+  height: auto;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  line-height: initial;
+  text-align: initial;
+  font-size: initial;
+  font-family: initial;
+  /* 使 markdown codeblock 能够正常显示水平滚动条 */
+  overflow-x: auto;
+}
+
+.pvp-modal-content p::-webkit-scrollbar {
+  display: block;
+  height: 10px;
+  background-color: #eee;
+}
+
+.pvp-modal-content p::-webkit-scrollbar-thumb {
+  background-color: #aaa;
+}
+
+.pvp-modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+[class^="pvp-modal-action-"] {
+  flex: 1;
+  border: 1px solid;
+  padding: 0.4em 0.4em;
+  text-align: center;
+  cursor: pointer;
 }

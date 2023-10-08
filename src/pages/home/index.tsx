@@ -14,7 +14,6 @@ const Home = () =>{
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
     // const [contractMetadata, setContractMetadata] = useState()
-    const [haveMonster, setHaveMonster] = useState(false)
     const rpgworld = async () => {
         const metadata = await getMetadata(NETWORK, PACKAGE_ID);
         // setContractMetadata(metadata)
@@ -29,59 +28,43 @@ const Home = () =>{
         
         console.log(obelisk.getAddress());
         let player_data = []
-        try {
-          player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress())
-        } catch {
-          
-        }
-        if (player_data.length === 0) {
-          const tx = new TransactionBlock()
-          const params = [
-            tx.pure(WORLD_ID),
-            tx.pure(0),
-            tx.pure(0),
-          ]
-          await obelisk.tx.rpg_system.register(tx, params)
-        }
 
+        let have_player = await obelisk.containEntity(WORLD_ID, 'position', obelisk.getAddress());
+        if (have_player === undefined) {
+          alert("Fetch sui api error!")
+        } else {
+          if (have_player === false) {
+            const tx = new TransactionBlock()
+            const params = [
+              tx.pure(WORLD_ID),
+              tx.pure(0),
+              tx.pure(0),
+            ]
+            await obelisk.tx.rpg_system.register(tx, params)
+          } else {
+            player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress())
+          }
+        }
 
 
         const map_data = await obelisk.getEntity(WORLD_ID, 'map')
-
-        let new_tx = new TransactionBlock()
-        let new_params = [
-          new_tx.pure(WORLD_ID),
-          new_tx.pure(obelisk.getAddress())
-        ]
+        console.log(map_data)
         console.log(WORLD_ID)
         console.log(obelisk.getAddress())
-        const encounter_contain = await obelisk.query.encounter_comp.contains(new_tx, new_params) as DevInspectResults;
-        let returnValue = [];
-
-        if (encounter_contain.effects.status.status === 'success') {
-          let resultList = encounter_contain.results![0].returnValues!;
-          for (let res of resultList) {
-            const bcs = new BCS(getSuiMoveConfig());
-            let value = Uint8Array.from(res[0]);
-            let data = bcs.de(res[1], value);
-            returnValue.push(data);
-          }
-        }
-        // if (returnValue[0] === )
-        console.log(returnValue[0])
+        // const encounter_contain = await obelisk.query.encounter_comp.contains(new_tx, new_params) as DevInspectResults;
+        const encounter_contain = await obelisk.containEntity(WORLD_ID, "encounter", obelisk.getAddress())
         console.log(JSON.stringify(player_data))
         const stepLength = 2.5;
         dispatch(setHero({
           name: obelisk.getAddress(),
           position: { left: player_data[0] * stepLength, top: player_data[1] * stepLength },
-          lock: returnValue[0]
+          lock: encounter_contain!
         }))
         dispatch(setMonster({
-          exist: returnValue[0]
+          exist: encounter_contain!
         }))
-        setHaveMonster(returnValue[0])
 
-        dispatch(setMapData({map: map_data[0], type: "green",
+        dispatch(setMapData({map: map_data[2], type: "green",
         ele_description: {
           walkable: [0, 39],
           green: [0],
@@ -194,25 +177,6 @@ const Home = () =>{
         },
         events: [],
         map_type: "event",}))
-
-        // const new_tx = await obelisk.tx.map_comp.get(tx, params,true) as TransactionBlock;
-        // const response = await obelisk.signAndSendTxn(
-        //     new_tx
-        // )
-
-        // if (response.effects.status.status == 'success') {
-        //     const metadata = await getMetadata(NETWORK, PACKAGE_ID);
-        //     const obelisk = new Obelisk({
-        //         networkType: NETWORK,
-        //         packageId: PACKAGE_ID,
-        //         metadata: metadata,
-        //     });
-        //     const component_name = Object.keys(obeliskConfig.singletonComponents)[0]
-        //     const component_value = await obelisk.getComponentByName(WORLD_ID,component_name)
-        //     const content = component_value.data.content as data
-        //     const value = content.fields.value.fields.data
-        //     setValue(value)
-        // }
         setIsLoading(true)
     }
 
@@ -223,28 +187,6 @@ const Home = () =>{
     }, [router.isReady]);
 
 
-    // useEffect(() => {
-    //     if (router.isReady){
-    //         const query_counter = async () => {
-    //             const metadata = await getMetadata(NETWORK, PACKAGE_ID);
-    //             const obelisk = new Obelisk({
-    //                 networkType: NETWORK,
-    //                 packageId: PACKAGE_ID,
-    //                 metadata: metadata,
-    //             });
-    //             // counter component name
-    //             const component_name = Object.keys(obeliskConfig.singletonComponents)[0]
-    //             const component_value = await obelisk.getComponentByName(WORLD_ID,component_name)
-    //             console.log(component_value)
-    //             const content = component_value.data.content as data
-    //             console.log(content)
-    //             const value = content.fields.value.fields.data
-    //             console.log(value)
-    //             setValue(value)
-    //         }
-    //         query_counter()
-    //     }
-    // }, [router.isReady]);
     if (isLoading) {
 
       return (

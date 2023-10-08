@@ -308,3 +308,12 @@
 .map-block.water-img-9 {
     background-image: url(../assets/img/water/68.png);
 }
+
+
+
+/*
+    monster image
+*/
+.monster-img-0 {
+    background-image: url(../assets/img/monster/gui.jpg);
+}

@@ -414,7 +414,6 @@ function loadImage(imageUrl){
     console.log(mapData.map[newPosition.top/stepLength][newPosition.left/stepLength] === mapData.ele_description.tussock[0])
     if (mapData.map[newPosition.top/stepLength][newPosition.left/stepLength] === mapData.ele_description.tussock[0]) {
       console.log('------------- in tussock')
-      // setHeroIsLocked(true)
 
       await savingGameWorld(true)
 
@@ -428,38 +427,18 @@ function loadImage(imageUrl){
 
       let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress())
 
-      let new_tx = new TransactionBlock()
-      let new_params = [
-        new_tx.pure(WORLD_ID),
-        new_tx.pure(obelisk.getAddress())
-      ]
-      const encounter_contain = await obelisk.query.encounter_comp.contains(new_tx, new_params) as DevInspectResults;
-      let returnValue = [];
+      const encounter_contain = await obelisk.containEntity(WORLD_ID, "encounter", obelisk.getAddress())
 
-      if (encounter_contain.effects.status.status === 'success') {
-        let resultList = encounter_contain.results![0].returnValues!;
-        for (let res of resultList) {
-          const bcs = new BCS(getSuiMoveConfig());
-          let value = Uint8Array.from(res[0]);
-          let data = bcs.de(res[1], value);
-          returnValue.push(data);
-        }
-      }
-      if (returnValue[0] === true) {
-        console.log('have monster 11');
-      }
-      console.log(returnValue[0])
-      console.log(JSON.stringify(player_data))
       const stepLength = 2.5;
       dispatch(setHero({
         name: obelisk.getAddress(),
         position: { left: player_data[0] * stepLength, top: player_data[1] * stepLength },
-        lock: returnValue[0]
+        lock: encounter_contain
       }))
       // setHeroIsLocked(!returnValue[0])
-      setHaveMonster(returnValue[0])
+      setHaveMonster(encounter_contain)
       dispatch(setMonster({
-        exist: returnValue[0]
+        exist: encounter_contain
       }))
     }
     if (stepTransactionsItem.length === 100) {
@@ -530,23 +509,29 @@ function loadImage(imageUrl){
   };
 
   // scroll map when part of moving-block is out of wrapper
-  const scrollIfNeeded = (direction: any) => {
+  const scrollIfNeeded = (direction: string) => {
     const scrollLength = parseInt((mapContainerRef.current.clientHeight / 3).toString());
+    console.log(`${direction}`)
+    console.log(`scroll ${scrollLength}`)
+    console.log(`bottom ${heroRef.current.getBoundingClientRect().bottom} ${mapContainerRef.current.getBoundingClientRect().bottom}`)
+    console.log(`top ${heroRef.current.getBoundingClientRect().top} ${mapContainerRef.current.getBoundingClientRect().top}`)
     if (
       direction === 'bottom' &&
       heroRef.current.getBoundingClientRect().bottom >
       mapContainerRef.current.getBoundingClientRect().bottom
     ) {
-      
+      console.log('-------- bottom')
       scrollSmoothly(scrollLength, 1);
     } else if (
       direction === 'top' &&
       heroRef.current.getBoundingClientRect().top < 
       mapContainerRef.current.getBoundingClientRect().top
     ) {
+      console.log('-------- top')
       scrollSmoothly(-scrollLength, -1);
     }
   };
+
 
   const getCoordinate = (stepLength: number) => {
     const x = heroPosition.top / stepLength;
@@ -650,11 +635,9 @@ function loadImage(imageUrl){
         break;
     }
     const targetBlock = mapData.map[targetPosition.x][targetPosition.y];
-    console.log("---111")
-    console.log(targetBlock)
-    console.log(mapData.ele_description.sprite)
-    console.log(withinRange(targetBlock, mapData.ele_description.sprite))
-    console.log('---10')
+    // console.log(targetBlock)
+    // console.log(mapData.ele_description.sprite)
+    // console.log(withinRange(targetBlock, mapData.ele_description.sprite))
 
     if (withinRange(targetBlock, mapData.ele_description.sprite)) {
       await interactNpc();
@@ -734,7 +717,7 @@ function loadImage(imageUrl){
       text: "Have monster",
       btn: {
         yes: "Throw",
-        no: "go away"
+        no: "Run"
       }
     })
   }
@@ -901,7 +884,7 @@ function loadImage(imageUrl){
           </div>
         </div>
         <div id="map">
-          {mapData.map && mapData.map.map((row, rowId) => {
+          {mapData.map && mapData.map.map((row: any, rowId: any) => {
             return (<div className='map-row flex' key={rowId}>
               {Array.from(Array(32).keys()).map((n, j) => { return drawBlock(mapData.map, rowId, j, mapData.type, mapData.ele_description, j) })}
             </div>)
