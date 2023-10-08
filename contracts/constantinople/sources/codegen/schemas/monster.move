@@ -1,4 +1,4 @@
-module constantinople::monster_comp {
+module constantinople::monster_schema {
     use std::ascii::{String, string};
     use sui::tx_context::TxContext;
     use sui::table::{Self, Table};
@@ -29,53 +29,50 @@ module constantinople::monster_comp {
 		}
 	}
 
-
-	struct CompMetadata has store {
+	struct SchemaMetadata has store {
 		name: String,
 		data: Table<address, MonsterData>
 	}
 
 	public fun register(_obelisk_world: &mut World, ctx: &mut TxContext) {
-		world::add_comp<CompMetadata>(_obelisk_world, NAME, CompMetadata {
+		world::add_schema<SchemaMetadata>(_obelisk_world, NAME, SchemaMetadata {
 			name: string(NAME),
 			data: table::new<address, MonsterData>(ctx)
 		});
 	}
 
 	public(friend) fun set(_obelisk_world: &mut World, _obelisk_entity_key: address, value: u64) {
-		let _obelisk_component = world::get_mut_comp<CompMetadata>(_obelisk_world, id());
+		let _obelisk_schema = world::get_mut_schema<SchemaMetadata>(_obelisk_world, id());
 		let _obelisk_data = new(value);
-		if(table::contains<address, MonsterData>(&_obelisk_component.data, _obelisk_entity_key)) {
-			*table::borrow_mut<address, MonsterData>(&mut _obelisk_component.data, _obelisk_entity_key) = _obelisk_data;
+		if(table::contains<address, MonsterData>(&_obelisk_schema.data, _obelisk_entity_key)) {
+			*table::borrow_mut<address, MonsterData>(&mut _obelisk_schema.data, _obelisk_entity_key) = _obelisk_data;
 		} else {
-			table::add(&mut _obelisk_component.data, _obelisk_entity_key, _obelisk_data);
+			table::add(&mut _obelisk_schema.data, _obelisk_entity_key, _obelisk_data);
 		};
 		events::emit_set(string(NAME), _obelisk_entity_key, _obelisk_data)
 	}
 
 
-
 	public fun get(_obelisk_world: &World ,_obelisk_entity_key: address): u64 {
-  		let _obelisk_component = world::get_comp<CompMetadata>(_obelisk_world, id());
-  		assert!(table::contains<address, MonsterData>(&_obelisk_component.data, _obelisk_entity_key), EEntityDoesNotExist);
-		let _obelisk_data = table::borrow<address, MonsterData>(&_obelisk_component.data, _obelisk_entity_key);
+  		let _obelisk_schema = world::get_schema<SchemaMetadata>(_obelisk_world, id());
+  		assert!(table::contains<address, MonsterData>(&_obelisk_schema.data, _obelisk_entity_key), EEntityDoesNotExist);
+		let _obelisk_data = table::borrow<address, MonsterData>(&_obelisk_schema.data, _obelisk_entity_key);
 		(
 			_obelisk_data.value
 		)
 	}
 
 
-
 	public(friend) fun remove(_obelisk_world: &mut World, _obelisk_entity_key: address) {
-		let _obelisk_component = world::get_mut_comp<CompMetadata>(_obelisk_world, id());
-		assert!(table::contains<address, MonsterData>(&_obelisk_component.data, _obelisk_entity_key), EEntityDoesNotExist);
-		table::remove(&mut _obelisk_component.data, _obelisk_entity_key);
+		let _obelisk_schema = world::get_mut_schema<SchemaMetadata>(_obelisk_world, id());
+		assert!(table::contains<address, MonsterData>(&_obelisk_schema.data, _obelisk_entity_key), EEntityDoesNotExist);
+		table::remove(&mut _obelisk_schema.data, _obelisk_entity_key);
 		events::emit_remove(string(NAME), _obelisk_entity_key)
 	}
 
 	public fun contains(_obelisk_world: &World, _obelisk_entity_key: address): bool {
-		let _obelisk_component = world::get_comp<CompMetadata>(_obelisk_world, id());
-		table::contains<address, MonsterData>(&_obelisk_component.data, _obelisk_entity_key)
+		let _obelisk_schema = world::get_schema<SchemaMetadata>(_obelisk_world, id());
+		table::contains<address, MonsterData>(&_obelisk_schema.data, _obelisk_entity_key)
 	}
 
 }

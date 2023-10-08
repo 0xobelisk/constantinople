@@ -6,10 +6,16 @@ export const obeliskConfig = {
     systems: [
         "rpg_system",
     ],
-    components: {
+    schemas: {
         movable: "bool",
+        monster: "u64",
         obstruction: "bool",
         player: "bool",
+        owned_monsters: "vector<address>",
+        catch_result: {
+            ephemeral: true,
+            valueSchema: "u8"
+        },
         position: {
             valueSchema: {
                 x: "u64",
