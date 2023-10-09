@@ -186,6 +186,7 @@ export default {
     monster: {
       exist: false
     },
+    ownedMonster: [],
     account: {
       address: "",
       connected: false,

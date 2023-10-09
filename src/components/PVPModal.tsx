@@ -37,6 +37,11 @@ export default function PVPModal(props: any) {
       )
       console.log(response)
     // }
+    if (response.effects.status.status === 'success') {
+      alert("Run success")
+    } else {
+      alert("Fetch sui api failed.")
+    }
 
     let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress())
 

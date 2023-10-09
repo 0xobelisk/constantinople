@@ -49,6 +49,12 @@ export function setProgress (data: any) {
     }
   }
 
+  export function setOwnedMonster (data: any) {
+    return (dispatch: any, getState: any) => {
+      dispatch({ type: 'SET_OWNED_MONSTER', data: data })
+    }
+  }
+
   export function setAlert (data: any) {
     return (dispatch: any, getState: any) => {
       dispatch({ type: 'SET_ALERT', data: data })

@@ -905,7 +905,8 @@ function loadImage(imageUrl){
       {stepTransactions.map((value: any, index: any) => (
           <>
           <div>
-            {value[2]}
+            {/* {`(${value[0]}, ${value[1]}) ${value[2]}`} */}
+            {`${value[2]}`}
           </div>
           </>
         ))}

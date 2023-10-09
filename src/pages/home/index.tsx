@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {NETWORK, PACKAGE_ID, WORLD_ID} from "../../chain/config";
 import {obeliskConfig} from "../../../obelisk.config";
 import PRIVATEKEY from "../../chain/key";
-import { setHero, setMapData, setContractMetadata, setMonster } from "../../store/actions"
+import { setHero, setMapData, setContractMetadata, setMonster, setOwnedMonster } from "../../store/actions"
 
 const Home = () =>{
   let dispatch = useDispatch();
@@ -52,7 +52,18 @@ const Home = () =>{
         console.log(WORLD_ID)
         console.log(obelisk.getAddress())
         // const encounter_contain = await obelisk.query.encounter_comp.contains(new_tx, new_params) as DevInspectResults;
+
+        const owned_monsters = await obelisk.getEntity(WORLD_ID, "owned_monsters", obelisk.getAddress())
+        console.log(owned_monsters)
+        if (owned_monsters !== undefined) {
+          dispatch(setOwnedMonster(
+            owned_monsters
+          ))
+        }
+
         const encounter_contain = await obelisk.containEntity(WORLD_ID, "encounter", obelisk.getAddress())
+
+        
         console.log(JSON.stringify(player_data))
         const stepLength = 2.5;
         dispatch(setHero({
@@ -70,6 +81,7 @@ const Home = () =>{
           green: [0],
           tussock: [20],
           flower: [22],
+          house_land: [23],
 
           ground_top_1: [30],
           ground_top_2: [31],
@@ -85,7 +97,6 @@ const Home = () =>{
           sprite: [41],
           old_man: [43],
           fat_man: [44],
-    
     
           water_top_1: [60],
           water_top_2: [61],
@@ -172,7 +183,6 @@ const Home = () =>{
           small_house_24: [158],
           small_house_25: [159],
     
-          house_land: [160],
           house_stree: [161],
         },
         events: [],
@@ -186,7 +196,8 @@ const Home = () =>{
         }
     }, [router.isReady]);
 
-
+    const ownedMonster = useSelector(state => state["ownedMonster"])
+    console.log(ownedMonster)
     if (isLoading) {
 
       return (
@@ -210,9 +221,21 @@ const Home = () =>{
         </div>
       <Dialog />
       <PVPModal />
-      <audio preload="auto" autoPlay loop>     
+      {/* <audio preload="auto" autoPlay loop>     
         <source src="/assets/music/home.mp3" type="audio/mpeg" />
-      </audio>
+      </audio> */}
+      <div className="mx-2 my-2 bg-white text-black">
+
+      {ownedMonster.map((data, index) => {
+        return (
+          <>
+          <div>
+            {`Monster-${index}: ${data}`}
+          </div>
+          </>
+          )
+      })}
+      </div>
       </div>
     )
     } else {

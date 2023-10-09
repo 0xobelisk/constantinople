@@ -91,6 +91,15 @@ function monster (state = defaultState.monster, action: any) {
   }
 }
 
+function ownedMonster (state = defaultState.ownedMonster, action: any) {
+  switch (action.type) {
+    case 'SET_OWNED_MONSTER':
+      return action.data
+    default:
+      return state
+  }
+}
+
 function hero (state = defaultState.hero, action: any) {
   switch (action.type) {
     case 'SET_HERO':
@@ -110,16 +119,12 @@ function account (state = defaultState.account, action: any) {
 }
 
 export default combineReducers({
-  // progress,
-  // page,
   mapData,
-  // mapSeed,
-  // mapNFT,
   dialog,
   sendTxLog,
   contractMetadata,
   monster,
-  // alert,
+  ownedMonster,
   hero,
   account,
 })
