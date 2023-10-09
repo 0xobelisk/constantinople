@@ -15,7 +15,8 @@ async function main() {
   let tx = new TransactionBlock();
   let params = [tx.pure(WORLD_ID)];
 
-  await obelisk.tx.rpg_system.init_map(tx, params);
+  const result = await obelisk.tx.rpg_system.init_map(tx, params);
+  console.log(result)
 }
 
 main();
