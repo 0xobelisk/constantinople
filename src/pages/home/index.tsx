@@ -27,7 +27,6 @@ const Home = () =>{
 
         
         console.log(obelisk.getAddress());
-        let player_data = []
 
         let have_player = await obelisk.containEntity(WORLD_ID, 'position', obelisk.getAddress());
         if (have_player === undefined) {
@@ -41,10 +40,9 @@ const Home = () =>{
               tx.pure(0),
             ]
             await obelisk.tx.rpg_system.register(tx, params)
-          } else {
-            player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress())
           }
         }
+        let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress())
 
 
         const map_data = await obelisk.getEntity(WORLD_ID, 'map')
