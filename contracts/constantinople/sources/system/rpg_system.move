@@ -20,8 +20,6 @@ module constantinople::rpg_system {
     use sui::tx_context;
     use sui::tx_context::TxContext;
     #[test_only]
-    use std::debug;
-    #[test_only]
     use constantinople::init;
     #[test_only]
     use sui::test_scenario;
@@ -31,6 +29,21 @@ module constantinople::rpg_system {
     const Caught: u8 = 0;
     const Fled: u8 = 1;
     const Missed: u8 = 2;
+
+    /// error already register
+    const EAlreadyRegister: u64 = 0;
+    /// error constrain position to map size
+    const EExceedingMapLimits: u64 = 1;
+    /// error this space is obstructed
+    const EObstaclesExist: u64 = 2;
+    ///  error cannot move
+    const ECannotMove: u64 = 3;
+    /// error cannot move during an encounter
+    const ECannotMoveInEncounter: u64 = 4;
+    /// error not in encounter
+    const ENotInEcounter: u64 = 5;
+    /// error can only move to adjacent spaces
+    const EOnlyMoveToAdjacentSpaces: u64 = 6;
 
     public entry fun init_map(world: &mut World) {
         let (width, height, terrain) = map_schema::get(world);
@@ -58,15 +71,15 @@ module constantinople::rpg_system {
 
         // error constrain position to map size
         let (width, height, _) = map_schema::get(world);
-        assert!(x >= 0 && x <= width, 0);
-        assert!(y >= 0 && x <= height, 0);
+        assert!(x >= 0 && x <= width, EExceedingMapLimits);
+        assert!(y >= 0 && x <= height, EExceedingMapLimits);
 
         // error already register
-        assert!(!player_schema::contains(world, player), 0);
+        assert!(!player_schema::contains(world, player), EAlreadyRegister);
 
         let position = entity_key::from_position(x, y);
         // error this space is obstructed
-        assert!(!obstruction_schema::contains(world, position), 0);
+        assert!(!obstruction_schema::contains(world, position), EObstaclesExist);
 
         player_schema::set(world, player, true);
         position_schema::set(world, player, x, y);
@@ -79,22 +92,22 @@ module constantinople::rpg_system {
 
         // error constrain position to map size
         let (width, height, _) = map_schema::get(world);
-        assert!(x >= 0 && x <= width, 0);
-        assert!(y >= 0 && x <= height, 0);
+        assert!(x >= 0 && x <= width, EExceedingMapLimits);
+        assert!(y >= 0 && x <= height, EExceedingMapLimits);
 
         // error cannot move
-        assert!(movable_schema::get(world, player), 0);
+        assert!(movable_schema::get(world, player), ECannotMove);
 
         // error cannot move during an encounter
-        assert!(!encounter_schema::contains(world, player), 0);
+        assert!(!encounter_schema::contains(world, player), ECannotMoveInEncounter);
 
         let (from_x, from_y) = position_schema::get(world, player);
         // error can only move to adjacent spaces
-        assert!(distance(from_x, from_y, x, y) == 1, 0);
+        assert!(distance(from_x, from_y, x, y) == 1, EOnlyMoveToAdjacentSpaces);
 
         let position = entity_key::from_position(x, y);
         // error this space is obstructed
-        assert!(!obstruction_schema::contains(world, position), 0);
+        assert!(!obstruction_schema::contains(world, position), EObstaclesExist);
 
         position_schema::set(world, player, x, y);
 
@@ -109,10 +122,10 @@ module constantinople::rpg_system {
     public entry fun throw_ball(world: &mut World, ctx: &mut TxContext) {
         let player = tx_context::sender(ctx);
         // error not in encounter
-        assert!(encounter_schema::contains(world, player), 0);
+        assert!(encounter_schema::contains(world, player), ENotInEcounter);
 
         let (_, monster, catch_attempts) = encounter_schema::get(world, player);
-        let (random, monster) = random(world, player, monster);
+        let (random, _) = random(world, player, monster);
         if (random % 2 == 0) {
             // 50% chance to catch monster
             // MonsterCatchAttempt.emitEphemeral(player, MonsterCatchResult.Caught);
@@ -141,7 +154,7 @@ module constantinople::rpg_system {
         let player = tx_context::sender(ctx);
 
         // error not in encounter
-        assert!(encounter_schema::contains(world, player), 0);
+        assert!(encounter_schema::contains(world, player), ENotInEcounter);
 
         let monster = encounter_schema::get_monster(world, player);
 
@@ -206,29 +219,27 @@ module constantinople::rpg_system {
 
         init_map(&mut world);
 
-        test_scenario::next_tx(scenario,@0x551fda20060670358846d6ce061454d71dd2b174734010cca22aa378b672e736);
+        test_scenario::next_tx(scenario,@0x1);
 
-        register(&mut world, 8, 2, test_scenario::ctx(scenario));
+        register(&mut world, 13, 3, test_scenario::ctx(scenario));
+        random_seed_schema::set(&mut world, 3);
 
-        test_scenario::next_tx(scenario,@0x551fda20060670358846d6ce061454d71dd2b174734010cca22aa378b672e736);
+        test_scenario::next_tx(scenario,@0x1);
 
-        move_t(&mut world, 9, 2, test_scenario::ctx(scenario));
+        move_t(&mut world, 14, 3, test_scenario::ctx(scenario));
 
-        test_scenario::next_tx(scenario,@0x551fda20060670358846d6ce061454d71dd2b174734010cca22aa378b672e736);
+        test_scenario::next_tx(scenario,@0x1);
         throw_ball(&mut world, test_scenario::ctx(scenario));
 
-        let r = owned_monsters_schema::get(&mut world, @0x551fda20060670358846d6ce061454d71dd2b174734010cca22aa378b672e736);
-        debug::print(&r);
+        random_seed_schema::set(&mut world, 4);
 
-        test_scenario::next_tx(scenario,@0x551fda20060670358846d6ce061454d71dd2b174734010cca22aa378b672e736);
-        move_t(&mut world, 9, 3, test_scenario::ctx(scenario));
+        test_scenario::next_tx(scenario,@0x1);
+        throw_ball(&mut world, test_scenario::ctx(scenario));
 
-        test_scenario::next_tx(scenario,@0x551fda20060670358846d6ce061454d71dd2b174734010cca22aa378b672e736);
-        flee(&mut world, test_scenario::ctx(scenario));
+        random_seed_schema::set(&mut world, 4);
 
-        test_scenario::next_tx(scenario,@0x551fda20060670358846d6ce061454d71dd2b174734010cca22aa378b672e736);
-        move_t(&mut world, 9, 4, test_scenario::ctx(scenario));
-
+        test_scenario::next_tx(scenario,@0x1);
+        throw_ball(&mut world, test_scenario::ctx(scenario));
 
         test_scenario::return_shared<World>(world);
         test_scenario::end(scenario_val);

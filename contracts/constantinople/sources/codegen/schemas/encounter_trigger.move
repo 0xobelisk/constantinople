@@ -49,7 +49,7 @@ module constantinople::encounter_trigger_schema {
 		} else {
 			table::add(&mut _obelisk_schema.data, _obelisk_entity_key, _obelisk_data);
 		};
-		events::emit_set(string(NAME), _obelisk_entity_key, _obelisk_data)
+		// events::emit_set(string(NAME), _obelisk_entity_key, _obelisk_data)
 	}
 
 
