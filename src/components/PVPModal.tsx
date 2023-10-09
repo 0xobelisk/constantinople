@@ -29,8 +29,7 @@ export default function PVPModal(props: any) {
         tx.pure(WORLD_ID)
       ]
 
-      let txb = await obelisk.tx.rpg_system.flee(tx, params, true)
-      console.log(txb)
+      await obelisk.tx.rpg_system.flee(tx, params, true)
 
       const response = await obelisk.signAndSendTxn(
         tx

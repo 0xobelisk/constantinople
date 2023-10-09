@@ -4,6 +4,7 @@
   "description": "Simple starter template",
   "author": "herny@0xobelisk.com",
   "license": "GPL3",
+  "type": "module",
   "scripts": {
     "dev": "pnpm run start-template",
     "start-template": "pnpm run localnode && sleep 5 && node src/scripts/index.js && obelisk faucet --network localnet && obelisk publish --network localnet --configPath obelisk.config.ts --savePath src/chain/config.ts && next",
