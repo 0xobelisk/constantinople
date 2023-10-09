@@ -72,7 +72,7 @@ module constantinople::rpg_system {
         // error constrain position to map size
         let (width, height, _) = map_schema::get(world);
         assert!(x >= 0 && x <= width, EExceedingMapLimits);
-        assert!(y >= 0 && x <= height, EExceedingMapLimits);
+        assert!(y >= 0 && y <= height, EExceedingMapLimits);
 
         // error already register
         assert!(!player_schema::contains(world, player), EAlreadyRegister);
