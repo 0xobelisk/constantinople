@@ -1,6 +1,5 @@
 {
   "ts-node": {
-    // 这些选项是仅由 ts-node 使用的覆盖
     "compilerOptions": {
       "module": "commonjs"
     }
