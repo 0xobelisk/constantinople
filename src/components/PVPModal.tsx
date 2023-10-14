@@ -3,7 +3,7 @@ import { AnyAction } from 'redux';
 import { setSendTxLog, setHero, setMonster } from "../store/actions";
 import {DevInspectResults, getMetadata, Obelisk, SuiMoveNormalizedModules, TransactionBlock, BCS, getSuiMoveConfig} from "@0xobelisk/client";
 import {NETWORK, PACKAGE_ID, WORLD_ID} from "../chain/config";
-import PRIVATEKEY from "../chain/key";
+import { PRIVATEKEY } from "../chain/key";
 
 export default function PVPModal(props: any) {
   const catchResult = ["Catch monster successed!", "Monster got away.", "Catch miss"]

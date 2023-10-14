@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 import { useDispatch, useSelector } from 'react-redux';
 import {NETWORK, PACKAGE_ID, WORLD_ID} from "../../chain/config";
 import {obeliskConfig} from "../../../obelisk.config";
-import PRIVATEKEY from "../../chain/key";
+import { PRIVATEKEY } from "../../chain/key";
 import { setHero, setMapData, setContractMetadata, setMonster, setOwnedMonster } from "../../store/actions"
 
 const Home = () =>{
@@ -195,7 +195,6 @@ const Home = () =>{
     }, [router.isReady]);
 
     const ownedMonster = useSelector(state => state["ownedMonster"])
-    console.log(ownedMonster)
     if (isLoading) {
 
       return (

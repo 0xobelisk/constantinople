@@ -5,7 +5,7 @@ import { setDialog, setSendTxLog, setHero, setMonster } from "../store/actions";
 // import axios from 'axios';
 import { marked } from 'marked';
 import {NETWORK, PACKAGE_ID, WORLD_ID} from "../chain/config";
-import PRIVATEKEY from "../chain/key";
+import { PRIVATEKEY } from "../chain/key";
 
 export default function Map(props: any) {
   let dispatch = useDispatch();
