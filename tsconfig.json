@@ -22,7 +22,12 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@mysten/bcs/*": ["path/to/your/bcs/module/*"],
+      "@mysten/sui.js/*": ["path/to/your/sui.js/module/*"]
+    }
   },
   "include": [
     "next-env.d.ts",

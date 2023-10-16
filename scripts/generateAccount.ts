@@ -1,4 +1,4 @@
-import { Ed25519Keypair, fromB64 } from '@mysten/sui.js';
+import { Ed25519Keypair, fromB64 } from '@0xobelisk/client';
 import * as fs from 'fs';
 
 function generateAccount() {
