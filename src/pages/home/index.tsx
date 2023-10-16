@@ -1,7 +1,8 @@
 import {DevInspectResults, getMetadata, Obelisk, TransactionBlock, BCS, getSuiMoveConfig} from "@0xobelisk/client";
 import {useEffect, useState} from "react";
+import { useAtom } from 'jotai'
 import { Map, Dialog, PVPModal } from "../../components";
-import {Value} from "../../jotai";
+import {Value, ContractMetadata} from "../../jotai";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from 'react-redux';
 import {NETWORK, PACKAGE_ID, WORLD_ID} from "../../chain/config";
@@ -13,18 +14,21 @@ const Home = () =>{
   let dispatch = useDispatch();
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
+    const [cm, setCm] = useAtom(ContractMetadata)
+
     // const [contractMetadata, setContractMetadata] = useState()
     const rpgworld = async () => {
         const metadata = await getMetadata(NETWORK, PACKAGE_ID);
         // setContractMetadata(metadata)
         dispatch(setContractMetadata(metadata))
+        setCm(metadata)
         const obelisk = new Obelisk({
             networkType: NETWORK,
             packageId: PACKAGE_ID,
             metadata: metadata,
             secretKey:PRIVATEKEY
         });
-
+        console.log(`jotai ${cm}`)
         
         console.log(obelisk.getAddress());
 

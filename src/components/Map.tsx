@@ -4,10 +4,15 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setDialog, setSendTxLog, setHero, setMonster } from "../store/actions";
 // import axios from 'axios';
 import { marked } from 'marked';
+
+import { useAtom } from 'jotai'
+import {Value, ContractMetadata} from "../jotai";
 import {NETWORK, PACKAGE_ID, WORLD_ID} from "../chain/config";
 import { PRIVATEKEY } from "../chain/key";
 
 export default function Map(props: any) {
+  const [cm, setCm] = useAtom(ContractMetadata)
+
   let dispatch = useDispatch();
   const treasureCount = 2;
   const spriteCount = 5;
@@ -731,11 +736,11 @@ function loadImage(imageUrl){
 
 
   const showNpcDialog = (dialogContent: any) => {
-    marked.setOptions({
-      gfm: true,
-      breaks: true,
-    })
-    dispatch(setDialog({display: true, content: marked.parse(dialogContent.text), yesContent: dialogContent.btn.yes, noContent: dialogContent.btn.no}));
+    // marked.setOptions({
+    //   gfm: true,
+    //   breaks: true,
+    // })
+    dispatch(setDialog({display: true, content: dialogContent.text, yesContent: dialogContent.btn.yes, noContent: dialogContent.btn.no}));
   }
 
   const openTreasureBox = (targetPosition) => {
@@ -911,7 +916,6 @@ function loadImage(imageUrl){
           </>
         ))}
       </div>
-
       {/* <audio preload="auto" autoPlay loop>     
         <source src="/assets/music/home.mp3" type="audio/mpeg" />
       </audio> */}
