@@ -1,5 +1,5 @@
 import { Obelisk, TransactionBlock } from '@0xobelisk/client';
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { SendTxLog, Hero, ContractMetadata, Monster, OwnedMonster } from '../state';
 import { NETWORK, PACKAGE_ID, WORLD_ID } from '../chain/config';
 import { PRIVATEKEY } from '../chain/key';
@@ -8,10 +8,10 @@ export default function PVPModal(props: any) {
   const catchResult = ['Catch monster successed!', 'Monster got away.', 'Catch miss'];
 
   const [sendTxLog, setSendTxLog] = useAtom(SendTxLog);
-  const [contractMetadata, setContractMetadata] = useAtom(ContractMetadata);
-  const [monster, setMonster] = useAtom(Monster);
+  const contractMetadata = useAtomValue(ContractMetadata);
+  const setMonster = useSetAtom(Monster);
   const [ownedMonster, setOwnedMonster] = useAtom(OwnedMonster);
-  const [hero, setHero] = useAtom(Hero);
+  const setHero = useSetAtom(Hero);
 
   const handleNoTxLog = async () => {
     // if (sendTxLog.onYes !== undefined) {

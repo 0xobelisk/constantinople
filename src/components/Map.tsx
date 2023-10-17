@@ -4,7 +4,7 @@ import {
 } from '@0xobelisk/client';
 import { useEffect, useState, useRef, useMemo, ReactElement } from 'react';
 
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import { MapData, ContractMetadata, Dialog, SendTxLog, Hero, Monster, OwnedMonster } from '../state';
 import { NETWORK, PACKAGE_ID, WORLD_ID } from '../chain/config';
 import { PRIVATEKEY } from '../chain/key';
@@ -24,8 +24,8 @@ export default function Map() {
 
   let [rowNumber, setRowNumber] = useState(1);
   let [unboxState, setUnboxState] = useState({});
-  const [mapData, setMapData] = useAtom(MapData);
-  const [contractMetadata, setContractMetadata] = useAtom(ContractMetadata);
+  const mapData = useAtomValue(MapData);
+  const contractMetadata = useAtomValue(ContractMetadata);
   const [monster, setMonster] = useAtom(Monster);
   const [ownedMonster, setOwnedMonster] = useAtom(OwnedMonster);
   const [hero, setHero] = useAtom(Hero);
@@ -33,8 +33,6 @@ export default function Map() {
   const setSendTxLog = useSetAtom(SendTxLog);
 
   const [stepTransactions, setStepTransactions] = useState<any[][]>([]);
-  // let [stepTxB, setStepTxB] = useState<TransactionBlock>(new TransactionBlock());
-  let stepTxB1 = new TransactionBlock();
   // fill screen with rows of block
   const calcOriginalMapRowNumber = function (height: any, width: any) {
     // subtract the p tag height
@@ -116,7 +114,6 @@ export default function Map() {
       className = 'unwalkable small-tree-img';
     } else if (withinRange(map[x][y], ele_description.flower)) {
       className = 'walkable flower-img';
-      // img = <img src={require('../assets/img/block/flower.gif')} alt='unwalkable' />;
     } else if (withinRange(map[x][y], ele_description.tree_top)) {
       className = 'unwalkable tree-top-img';
     } else if (withinRange(map[x][y], ele_description.tree_bottom)) {
@@ -299,10 +296,7 @@ export default function Map() {
     } else if (withinRange(map[x][y], ele_description.old_man)) {
       className = `unwalkable oldman-img npc_man`;
     } else if (withinRange(map[x][y], ele_description.fat_man)) {
-      // const sprite = 'sprite' + randomState1[`${x}-${y}`];
       className = `unwalkable fatman-img`;
-      // const npc_image = mapData.map_type == 'gallery' ? 'gallery_house' : sprite;
-      // img = <img src={require(`../assets/img/block/fatman.png`)} alt={npc_image} onClick={() => onInteract(x, y)}/>
     } else if (withinRange(map[x][y], ele_description.rocks)) {
       className = 'unwalkable rocks-img';
     } else if (ele_description.object !== undefined && withinRange(map[x][y], ele_description.object)) {
