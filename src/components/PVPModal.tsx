@@ -70,7 +70,6 @@ export default function PVPModal(props: any) {
     // if (sendTxLog.onYes !== undefined) {
     console.log('------- 1');
     // sendTxLog.onYes();
-    console.log(contractMetadata['contractMetadata']);
     const obelisk = new Obelisk({
       networkType: NETWORK,
       packageId: PACKAGE_ID,
@@ -89,7 +88,12 @@ export default function PVPModal(props: any) {
     let catch_result = -1;
     if (response.effects.status.status === 'success') {
       response.events.map(event => {
-        if (event.parsedJson['_obelisk_schema_name'] === 'catch_result') {
+        let obelisk_schema_id = event.parsedJson['_obelisk_schema_id'];
+        console.log(obelisk_schema_id);
+        const textDecoder = new TextDecoder('utf-8');
+        const obelisk_schema_name = textDecoder.decode(new Uint8Array(obelisk_schema_id));
+
+        if (obelisk_schema_name === 'catch_result') {
           catch_result = event.parsedJson['data']['value'];
         }
       });
@@ -116,6 +120,7 @@ export default function PVPModal(props: any) {
     } else {
       console.log('catch failed');
     }
+    console.log(`here  ------ ${catch_result}`);
     alert(catchResult[catch_result]);
   };
 

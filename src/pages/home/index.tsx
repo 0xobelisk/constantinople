@@ -50,12 +50,11 @@ const Home = () => {
     // const encounter_contain = await obelisk.query.encounter_comp.contains(new_tx, new_params) as DevInspectResults;
 
     const owned_monsters = await obelisk.getEntity(WORLD_ID, 'owned_monsters', obelisk.getAddress());
-    console.log(owned_monsters);
     if (owned_monsters !== undefined) {
       // dispatch(setOwnedMonster(
       //   owned_monsters
       // ))
-      setOwnedMonster(owned_monsters);
+      setOwnedMonster(owned_monsters[0]);
     }
 
     const encounter_contain = await obelisk.containEntity(WORLD_ID, 'encounter', obelisk.getAddress());
@@ -223,7 +222,7 @@ const Home = () => {
           {ownedMonster.map((data, index) => {
             return (
               <>
-                <div>{`Monster-${index}: ${data}`}</div>
+                <div>{`Monster-${index}: 0x${data}`}</div>
               </>
             );
           })}

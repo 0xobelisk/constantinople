@@ -1,7 +1,4 @@
-import {
-  Obelisk,
-  TransactionBlock,
-} from '@0xobelisk/client';
+import { Obelisk, TransactionBlock } from '@0xobelisk/client';
 import { useEffect, useState, useRef, useMemo, ReactElement } from 'react';
 
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
@@ -445,6 +442,8 @@ export default function Map() {
         lock: encounter_contain,
       });
       // setHeroIsLocked(!returnValue[0])
+      console.log('-----------------------');
+      console.log(encounter_contain);
       setHaveMonster(encounter_contain);
       setMonster({
         exist: encounter_contain,

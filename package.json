@@ -31,9 +31,9 @@
     "generateAccount": "ts-node scripts/generateAccount.ts"
   },
   "dependencies": {
-    "@0xobelisk/cli": "^0.4.2",
-    "@0xobelisk/client": "^0.4.2",
-    "@0xobelisk/common": "^0.4.2",
+    "@0xobelisk/cli": "^0.4.5",
+    "@0xobelisk/client": "^0.4.5",
+    "@0xobelisk/common": "^0.4.5",
     "@reduxjs/toolkit": "^1.9.7",
     "@suiet/wallet-kit": "^0.2.19",
     "axios": "^0.26.0",
