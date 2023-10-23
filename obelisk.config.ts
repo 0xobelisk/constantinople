@@ -5,7 +5,6 @@ export const obeliskConfig = {
   description: 'constantinople',
   systems: ['rpg_system'],
   schemas: {
-    datauser: 'address',
     movable: 'bool',
     monster: 'u64',
     obstruction: 'bool',

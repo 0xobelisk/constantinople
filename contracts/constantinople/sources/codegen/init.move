@@ -3,7 +3,6 @@ module constantinople::init {
     use sui::transfer;
     use sui::tx_context::TxContext;
     use constantinople::world;
-	use constantinople::datauser_schema;
 	use constantinople::movable_schema;
 	use constantinople::monster_schema;
 	use constantinople::obstruction_schema;
@@ -20,7 +19,6 @@ module constantinople::init {
         let _obelisk_world = world::create(string(b"Constantinople"), string(b"Constantinople"),ctx);
 
         // Add Schema
-		datauser_schema::register(&mut _obelisk_world, ctx);
 		movable_schema::register(&mut _obelisk_world, ctx);
 		monster_schema::register(&mut _obelisk_world, ctx);
 		obstruction_schema::register(&mut _obelisk_world, ctx);
