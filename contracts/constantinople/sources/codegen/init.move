@@ -14,9 +14,10 @@ module constantinople::init {
 	use constantinople::encounterable_schema;
 	use constantinople::random_seed_schema;
 	use constantinople::map_schema;
+	use sui::tx_context;
 
-    fun init(ctx: &mut TxContext) {
-        let _obelisk_world = world::create(string(b"Constantinople"), string(b"Constantinople"),ctx);
+	fun init(ctx: &mut TxContext) {
+        let (_obelisk_world, admin_cap) = world::create(string(b"Constantinople"), string(b"Constantinople"),ctx);
 
         // Add Schema
 		movable_schema::register(&mut _obelisk_world, ctx);
@@ -32,6 +33,7 @@ module constantinople::init {
 		map_schema::register(&mut _obelisk_world, ctx);
 
         transfer::public_share_object(_obelisk_world);
+		transfer::transfer(admin_cap, tx_context::sender(ctx));
     }
 
     #[test_only]

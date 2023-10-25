@@ -40,8 +40,8 @@ module constantinople::world {
         version: u64
     }
 
-    public fun create(name: String, description: String, ctx: &mut TxContext): World {
-        let admin = AdminCap {
+    public fun create(name: String, description: String, ctx: &mut TxContext): (World, AdminCap) {
+        let admin_cap = AdminCap {
             id: object::new(ctx),
         };
         let _obelisk_world = World {
@@ -50,11 +50,14 @@ module constantinople::world {
             description,
             schemas: bag::new(ctx),
             schema_names: vector::empty(),
-            admin: object::id(&admin),
+            admin: object::id(&admin_cap),
             version: VERSION
         };
-        transfer::transfer(admin, tx_context::sender(ctx));
-        _obelisk_world
+        (_obelisk_world, admin_cap)
+    }
+
+    public fun get_admin(_obelisk_world: &World): ID {
+        _obelisk_world.admin
     }
 
     public fun info(_obelisk_world: &World): (String, String, u64) {
@@ -77,11 +80,21 @@ module constantinople::world {
         bag::borrow_mut<vector<u8>, T>(&mut _obelisk_world.schemas, _obelisk_schema_id)
     }
 
-    public fun add_schema<T : store>(_obelisk_world: &mut World, _obelisk_schema_id: vector<u8>, schema: T){
+    public fun add_schema<T : store>(_obelisk_world: &mut World, _obelisk_schema_id: vector<u8>, schema: T, admin_cap: &AdminCap){
+        assert!(_obelisk_world.admin == object::id(admin_cap), ENotAdmin);
         assert!(_obelisk_world.version == VERSION, EWrongVersion);
         assert!(!bag::contains(&_obelisk_world.schemas, _obelisk_schema_id), ESchemaAlreadyExists);
         vector::push_back(&mut _obelisk_world.schema_names, string(_obelisk_schema_id));
         bag::add<vector<u8>,T>(&mut _obelisk_world.schemas, _obelisk_schema_id, schema);
+    }
+
+    public fun remove_schema<T : store>(_obelisk_world: &mut World, _obelisk_schema_id: vector<u8>, admin_cap: &AdminCap){
+        assert!(_obelisk_world.admin == object::id(admin_cap), ENotAdmin);
+        assert!(_obelisk_world.version == VERSION, EWrongVersion);
+        assert!(bag::contains(&_obelisk_world.schemas, _obelisk_schema_id), ESchemaDoesNotExist);
+        let (_, pending_remove_index) = vector::index_of(&_obelisk_world.schema_names, &string(_obelisk_schema_id));
+        vector::remove(&mut _obelisk_world.schema_names, pending_remove_index);
+        bag::remove<vector<u8>,T>(&mut _obelisk_world.schemas, _obelisk_schema_id);
     }
 
     public fun contains(_obelisk_world: &mut World, _obelisk_schema_id: vector<u8>): bool {

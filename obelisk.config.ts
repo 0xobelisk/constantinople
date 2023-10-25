@@ -3,7 +3,7 @@ import { ObeliskConfig } from '@0xobelisk/common';
 export const obeliskConfig = {
   name: 'constantinople',
   description: 'constantinople',
-  systems: ['rpg_system'],
+  systems: ['map_system', 'encounter_system'],
   schemas: {
     movable: 'bool',
     monster: 'u64',

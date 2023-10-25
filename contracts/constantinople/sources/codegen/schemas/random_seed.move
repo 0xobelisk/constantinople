@@ -4,7 +4,8 @@ module constantinople::random_seed_schema {
     use constantinople::events;
     use constantinople::world::{Self, World};
     // Systems
-	friend constantinople::rpg_system;
+	friend constantinople::map_system;
+	friend constantinople::encounter_system;
 
 	const SCHEMA_ID: vector<u8> = b"random_seed";
 
