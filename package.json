@@ -6,7 +6,7 @@
   "license": "GPL3",
   "scripts": {
     "dev": "pnpm run start-template",
-    "start-template": "pnpm run localnode && sleep 5 && ts-node scripts/generateAccount.ts && obelisk faucet --network localnet && obelisk publish --network localnet && ts-node scripts/storeConfig.ts localnet && ts-node scripts/init_map.ts && next",
+    "start-template": "pnpm run localnode && sleep 5 && ts-node scripts/generateAccount.ts && obelisk faucet --network localnet && obelisk publish --network localnet && ts-node scripts/storeConfig.ts localnet && next",
     "next": "next",
     "build": "next build",
     "start": "next start",
@@ -31,9 +31,9 @@
     "generateAccount": "ts-node scripts/generateAccount.ts"
   },
   "dependencies": {
-    "@0xobelisk/cli": "^0.4.5",
-    "@0xobelisk/client": "^0.4.5",
-    "@0xobelisk/common": "^0.4.5",
+    "@0xobelisk/cli": "^0.4.7",
+    "@0xobelisk/client": "^0.4.7",
+    "@0xobelisk/common": "^0.4.7",
     "@reduxjs/toolkit": "^1.9.7",
     "@suiet/wallet-kit": "^0.2.19",
     "axios": "^0.26.0",

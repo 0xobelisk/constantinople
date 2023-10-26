@@ -1,7 +1,6 @@
 module constantinople::map_system {
     use constantinople::map_schema;
     use constantinople::world::World;
-    use std::vector;
     use constantinople::entity_key;
     use constantinople::encounter_trigger_schema;
     use constantinople::obstruction_schema;
@@ -12,11 +11,20 @@ module constantinople::map_system {
     use constantinople::movable_schema;
     use constantinople::encounterable_schema;
     use constantinople::encounter_schema;
-    use sui::address;
-    use constantinople::monster_schema;
-    use constantinople::random_seed_schema;
-    use sui::bcs;
-    use sui::hash::keccak256;
+    use sui::clock::Clock;
+    use sui::clock;
+    #[test_only]
+    use sui::test_scenario;
+    #[test_only]
+    use sui::test_scenario::Scenario;
+    #[test_only]
+    use constantinople::init;
+    #[test_only]
+    use constantinople::world::AdminCap;
+    #[test_only]
+    use constantinople::deploy_hook::deploy_hook_for_testing;
+    #[test_only]
+    use sui::clock_tests;
 
     /// error already register
     const EAlreadyRegister: u64 = 0;
@@ -28,31 +36,8 @@ module constantinople::map_system {
     const ECannotMove: u64 = 3;
     /// error cannot move during an encounter
     const ECannotMoveInEncounter: u64 = 4;
-    /// error not in encounter
-    const ENotInEcounter: u64 = 5;
     /// error can only move to adjacent spaces
-    const EOnlyMoveToAdjacentSpaces: u64 = 6;
-
-    public entry fun init_map(world: &mut World) {
-        let (width, height, terrain) = map_schema::get(world);
-
-        let y = 0;
-        while (y < height) {
-            let x = 0;
-            while (x < width) {
-                let value = *vector::borrow(vector::borrow(&terrain, y), x);
-                let entity = entity_key::from_position(x, y);
-                if (value == 20) {
-                    encounter_trigger_schema::set(world, entity, true);
-                };
-                if (value >= 40) {
-                    obstruction_schema::set(world, entity, true);
-                };
-                x = x + 1;
-            };
-            y = y + 1;
-        };
-    }
+    const EOnlyMoveToAdjacentSpaces: u64 = 5;
 
     public entry fun register(world: &mut World, x: u64, y: u64, ctx: &mut TxContext) {
         let player = tx_context::sender(ctx);
@@ -75,7 +60,7 @@ module constantinople::map_system {
         encounterable_schema::set(world, player, true);
     }
 
-    public entry fun move_t(world: &mut World, x: u64, y: u64, ctx: &mut TxContext) {
+    public entry fun move_t(world: &mut World, x: u64, y: u64, clock: &Clock, ctx: &mut TxContext) {
         let player = tx_context::sender(ctx);
 
         // error constrain position to map size
@@ -100,17 +85,15 @@ module constantinople::map_system {
         position_schema::set(world, player, x, y);
 
         if (encounterable_schema::contains(world, player) && encounter_trigger_schema::contains(world, position)) {
-            let (random, monster) = random(world, player, position);
-            if (random % 3 == 0) {
-                start_encounter(world, player, monster);
+            // Pass in the time as a random number
+            let rand = clock::timestamp_ms(clock);
+            if (rand % 2 == 0) {
+                // Generate Monster
+                let monster = entity_key::from_u256((rand as u256));
+                // Start encounter
+                encounter_schema::set(world, player, true, monster, 0);
             };
         };
-    }
-
-    fun start_encounter(world: &mut World, player: address, monster: address) {
-        let monster_type = bytes_to_u64(address::to_bytes(monster)) % 3;
-        monster_schema::set(world, monster, monster_type);
-        encounter_schema::set(world, player, true, monster, 0);
     }
 
     fun distance(from_x: u64, from_y: u64, to_x: u64, to_y: u64) : u64 {
@@ -119,27 +102,37 @@ module constantinople::map_system {
         delta_x + delta_y
     }
 
-    public fun random(world: &mut World, player: address, position: address): (u64, address) {
-        let random_seed = random_seed_schema::get(world);
-        random_seed_schema::set(world, random_seed+1);
-        let v = vector::empty<u8>();
-        vector::append(&mut v, bcs::to_bytes(&player));
-        vector::append(&mut v, bcs::to_bytes(&position));
-        vector::append(&mut v, bcs::to_bytes(&random_seed));
-        let hash = keccak256(&v);
-        (
-            bytes_to_u64(hash),
-            address::from_bytes(hash)
-        )
+    #[test_only]
+    public fun init_test(): Scenario {
+        let scenario_val = test_scenario::begin(@0x0001);
+        let scenario = &mut scenario_val;
+        {
+            let ctx = test_scenario::ctx(scenario);
+            init::init_world_for_testing(ctx);
+        };
+        test_scenario::next_tx(scenario,@0x0001);
+        scenario_val
     }
 
-    fun bytes_to_u64(bytes: vector<u8>): u64 {
-        let value = 0u64;
-        let i = 0u64;
-        while (i < 8) {
-            value = value | ((*vector::borrow(&bytes, i) as u64) << ((8 * (7 - i)) as u8));
-            i = i + 1;
-        };
-        return value
+    #[test]
+    public fun test_create_world()  {
+        let scenario_val = init_test();
+        let scenario = &mut scenario_val;
+
+        let world = test_scenario::take_shared<World>(scenario);
+       let admin_cap = test_scenario::take_from_sender<AdminCap>(scenario);
+
+        deploy_hook_for_testing(&mut world, &admin_cap);
+
+        register(&mut world, 0 , 0, test_scenario::ctx(scenario));
+        test_scenario::next_tx(scenario,@0x0001);
+
+        let clock = clock::create_for_testing(test_scenario::ctx(scenario));
+        move_t(&mut world, 0,1, &clock, test_scenario::ctx(scenario));
+
+        clock::destroy_for_testing(clock);
+        test_scenario::return_shared<World>(world);
+        test_scenario::return_to_sender<AdminCap>(scenario,admin_cap);
+        test_scenario::end(scenario_val);
     }
 }

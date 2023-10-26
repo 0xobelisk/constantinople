@@ -1,10 +1,9 @@
 module constantinople::init {
     use std::ascii::string;
     use sui::transfer;
-    use sui::tx_context::TxContext;
+    use sui::tx_context::{Self, TxContext};
     use constantinople::world;
 	use constantinople::movable_schema;
-	use constantinople::monster_schema;
 	use constantinople::obstruction_schema;
 	use constantinople::player_schema;
 	use constantinople::owned_monsters_schema;
@@ -12,28 +11,24 @@ module constantinople::init {
 	use constantinople::encounter_schema;
 	use constantinople::encounter_trigger_schema;
 	use constantinople::encounterable_schema;
-	use constantinople::random_seed_schema;
 	use constantinople::map_schema;
-	use sui::tx_context;
 
-	fun init(ctx: &mut TxContext) {
+    fun init(ctx: &mut TxContext) {
         let (_obelisk_world, admin_cap) = world::create(string(b"Constantinople"), string(b"Constantinople"),ctx);
 
         // Add Schema
-		movable_schema::register(&mut _obelisk_world, ctx);
-		monster_schema::register(&mut _obelisk_world, ctx);
-		obstruction_schema::register(&mut _obelisk_world, ctx);
-		player_schema::register(&mut _obelisk_world, ctx);
-		owned_monsters_schema::register(&mut _obelisk_world, ctx);
-		position_schema::register(&mut _obelisk_world, ctx);
-		encounter_schema::register(&mut _obelisk_world, ctx);
-		encounter_trigger_schema::register(&mut _obelisk_world, ctx);
-		encounterable_schema::register(&mut _obelisk_world, ctx);
-		random_seed_schema::register(&mut _obelisk_world, ctx);
-		map_schema::register(&mut _obelisk_world, ctx);
+		movable_schema::register(&mut _obelisk_world, &admin_cap, ctx);
+		obstruction_schema::register(&mut _obelisk_world, &admin_cap, ctx);
+		player_schema::register(&mut _obelisk_world, &admin_cap, ctx);
+		owned_monsters_schema::register(&mut _obelisk_world, &admin_cap, ctx);
+		position_schema::register(&mut _obelisk_world, &admin_cap, ctx);
+		encounter_schema::register(&mut _obelisk_world, &admin_cap, ctx);
+		encounter_trigger_schema::register(&mut _obelisk_world, &admin_cap, ctx);
+		encounterable_schema::register(&mut _obelisk_world, &admin_cap, ctx);
+		map_schema::register(&mut _obelisk_world, &admin_cap, ctx);
 
         transfer::public_share_object(_obelisk_world);
-		transfer::transfer(admin_cap, tx_context::sender(ctx));
+        transfer::public_transfer(admin_cap, tx_context::sender(ctx));
     }
 
     #[test_only]

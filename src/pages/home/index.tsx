@@ -38,7 +38,7 @@ const Home = () => {
       if (have_player === false) {
         const tx = new TransactionBlock();
         const params = [tx.pure(WORLD_ID), tx.pure(0), tx.pure(0)];
-        await obelisk.tx.rpg_system.register(tx, params);
+        await obelisk.tx.map_system.register(tx, params);
       }
     }
     let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress());

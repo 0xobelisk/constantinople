@@ -6,7 +6,6 @@ export const obeliskConfig = {
   systems: ['map_system', 'encounter_system'],
   schemas: {
     movable: 'bool',
-    monster: 'u64',
     obstruction: 'bool',
     player: 'bool',
     owned_monsters: 'vector<address>',
@@ -29,10 +28,6 @@ export const obeliskConfig = {
     },
     encounter_trigger: 'bool',
     encounterable: 'bool',
-    random_seed: {
-      valueType: 'u64',
-      defaultValue: 0,
-    },
     map: {
       valueType: {
         width: 'u64',

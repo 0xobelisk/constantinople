@@ -3,16 +3,18 @@ module constantinople::encounter_schema {
     use sui::tx_context::TxContext;
     use sui::table::{Self, Table};
     use constantinople::events;
-    use constantinople::world::{Self, World};
+    use constantinople::world::{Self, World, AdminCap};
 
     // Systems
 	friend constantinople::map_system;
 	friend constantinople::encounter_system;
+	friend constantinople::deploy_hook;
 
 	/// Entity does not exist
 	const EEntityDoesNotExist: u64 = 0;
 
 	const SCHEMA_ID: vector<u8> = b"encounter";
+	const SCHEMA_TYPE: u8 = 0;
 
 	// exists
 	// monster
@@ -31,8 +33,8 @@ module constantinople::encounter_schema {
 		}
 	}
 
-	public fun register(_obelisk_world: &mut World, ctx: &mut TxContext) {
-		world::add_schema<Table<address,EncounterData>>(_obelisk_world, SCHEMA_ID, table::new<address, EncounterData>(ctx));
+	public fun register(_obelisk_world: &mut World, admin_cap: &AdminCap, ctx: &mut TxContext) {
+		world::add_schema<Table<address,EncounterData>>(_obelisk_world, SCHEMA_ID, table::new<address, EncounterData>(ctx), admin_cap);
 	}
 
 	public(friend) fun set(_obelisk_world: &mut World, _obelisk_entity_key: address,  exists: bool, monster: address, catch_attempts: u64) {
@@ -43,7 +45,7 @@ module constantinople::encounter_schema {
 		} else {
 			table::add(_obelisk_schema, _obelisk_entity_key, _obelisk_data);
 		};
-		events::emit_set(SCHEMA_ID, some(_obelisk_entity_key), _obelisk_data)
+		events::emit_set(SCHEMA_ID, SCHEMA_TYPE, some(_obelisk_entity_key), _obelisk_data)
 	}
 
 	public(friend) fun set_exists(_obelisk_world: &mut World, _obelisk_entity_key: address, exists: bool) {
@@ -51,7 +53,7 @@ module constantinople::encounter_schema {
 		assert!(table::contains<address, EncounterData>(_obelisk_schema, _obelisk_entity_key), EEntityDoesNotExist);
 		let _obelisk_data = table::borrow_mut<address, EncounterData>(_obelisk_schema, _obelisk_entity_key);
 		_obelisk_data.exists = exists;
-		events::emit_set(SCHEMA_ID, some(_obelisk_entity_key), *_obelisk_data)
+		events::emit_set(SCHEMA_ID, SCHEMA_TYPE, some(_obelisk_entity_key), *_obelisk_data)
 	}
 
 	public(friend) fun set_monster(_obelisk_world: &mut World, _obelisk_entity_key: address, monster: address) {
@@ -59,7 +61,7 @@ module constantinople::encounter_schema {
 		assert!(table::contains<address, EncounterData>(_obelisk_schema, _obelisk_entity_key), EEntityDoesNotExist);
 		let _obelisk_data = table::borrow_mut<address, EncounterData>(_obelisk_schema, _obelisk_entity_key);
 		_obelisk_data.monster = monster;
-		events::emit_set(SCHEMA_ID, some(_obelisk_entity_key), *_obelisk_data)
+		events::emit_set(SCHEMA_ID, SCHEMA_TYPE, some(_obelisk_entity_key), *_obelisk_data)
 	}
 
 	public(friend) fun set_catch_attempts(_obelisk_world: &mut World, _obelisk_entity_key: address, catch_attempts: u64) {
@@ -67,7 +69,7 @@ module constantinople::encounter_schema {
 		assert!(table::contains<address, EncounterData>(_obelisk_schema, _obelisk_entity_key), EEntityDoesNotExist);
 		let _obelisk_data = table::borrow_mut<address, EncounterData>(_obelisk_schema, _obelisk_entity_key);
 		_obelisk_data.catch_attempts = catch_attempts;
-		events::emit_set(SCHEMA_ID, some(_obelisk_entity_key), *_obelisk_data)
+		events::emit_set(SCHEMA_ID, SCHEMA_TYPE, some(_obelisk_entity_key), *_obelisk_data)
 	}
 
 	public fun get(_obelisk_world: &World, _obelisk_entity_key: address): (bool,address,u64) {

@@ -1,8 +1,9 @@
 {
   "projectName": "constantinople",
   "network": "localnet",
-  "packageId": "0xd9237b6334cf73c495806cae22c02df779b63b0b1d5aef83122a006914536e61",
-  "worldId": "0x2a7e0fe392f2add884be13f13d19dcf2a524b2ba8cca91ba5977899ea30573ce",
-  "upgradeCap": "0x39b6b8921ee4b7aac8be3e63034fd0328a15e10b4323491ad8facd8beea20fe8",
+  "packageId": "0x7b98c3c21aa8416b13bf5bd6766837bc170926cdb8c331863a7c8d3b202bc7ed",
+  "worldId": "0xb9ffec1801c98bf911292a00dbdd505f6eb78692cb40662dddb1d380335311ba",
+  "upgradeCap": "0x4c25fa871e32c9ba1474462a78808d48da176f5364e24c16e551a0d098a1f2ff",
+  "adminCap": "0x60714387f2b65d87f4ffa40997a0d8e8cfb02512d9f54fa28ff70606344a47a5",
   "version": 1
 }

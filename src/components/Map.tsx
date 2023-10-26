@@ -473,10 +473,11 @@ export default function Map() {
       });
       const stepTxB = new TransactionBlock();
       let tx_world_id = stepTxB.pure(WORLD_ID);
+      let tx_clock = stepTxB.pure("0x6");
 
       for (let historyDirection of stepTransactionsItem) {
-        let params = [tx_world_id, stepTxB.pure(historyDirection[0]), stepTxB.pure(historyDirection[1])];
-        obelisk.tx.rpg_system.move_t(stepTxB, params, true) as TransactionBlock;
+        let params = [tx_world_id, stepTxB.pure(historyDirection[0]), stepTxB.pure(historyDirection[1]), tx_clock];
+        obelisk.tx.map_system.move_t(stepTxB, params, true) as TransactionBlock;
       }
 
       const response = await obelisk.signAndSendTxn(stepTxB);

@@ -26,7 +26,7 @@ export default function PVPModal(props: any) {
     let tx = new TransactionBlock();
     let params = [tx.pure(WORLD_ID)];
 
-    await obelisk.tx.rpg_system.flee(tx, params, true);
+    await obelisk.tx.encounter_system.flee(tx, params, true);
 
     const response = await obelisk.signAndSendTxn(tx);
     console.log(response);
@@ -78,9 +78,9 @@ export default function PVPModal(props: any) {
     });
 
     let tx = new TransactionBlock();
-    let params = [tx.pure(WORLD_ID)];
+    let params = [tx.pure(WORLD_ID), tx.pure("0x6")];
 
-    let txb = await obelisk.tx.rpg_system.throw_ball(tx, params, true);
+    let txb = await obelisk.tx.encounter_system.throw_ball(tx, params, true);
     console.log(txb);
 
     const response = await obelisk.signAndSendTxn(tx);

@@ -3,16 +3,18 @@ module constantinople::player_schema {
     use sui::tx_context::TxContext;
     use sui::table::{Self, Table};
     use constantinople::events;
-    use constantinople::world::{Self, World};
+    use constantinople::world::{Self, World, AdminCap};
 
     // Systems
 	friend constantinople::map_system;
 	friend constantinople::encounter_system;
+	friend constantinople::deploy_hook;
 
 	/// Entity does not exist
 	const EEntityDoesNotExist: u64 = 0;
 
 	const SCHEMA_ID: vector<u8> = b"player";
+	const SCHEMA_TYPE: u8 = 0;
 
 	// value
 	struct PlayerData has copy, drop , store {
@@ -25,8 +27,8 @@ module constantinople::player_schema {
 		}
 	}
 
-	public fun register(_obelisk_world: &mut World, ctx: &mut TxContext) {
-		world::add_schema<Table<address,PlayerData>>(_obelisk_world, SCHEMA_ID, table::new<address, PlayerData>(ctx));
+	public fun register(_obelisk_world: &mut World, admin_cap: &AdminCap, ctx: &mut TxContext) {
+		world::add_schema<Table<address,PlayerData>>(_obelisk_world, SCHEMA_ID, table::new<address, PlayerData>(ctx), admin_cap);
 	}
 
 	public(friend) fun set(_obelisk_world: &mut World, _obelisk_entity_key: address,  value: bool) {
@@ -37,7 +39,7 @@ module constantinople::player_schema {
 		} else {
 			table::add(_obelisk_schema, _obelisk_entity_key, _obelisk_data);
 		};
-		events::emit_set(SCHEMA_ID, some(_obelisk_entity_key), _obelisk_data)
+		events::emit_set(SCHEMA_ID, SCHEMA_TYPE, some(_obelisk_entity_key), _obelisk_data)
 	}
 
 	public fun get(_obelisk_world: &World, _obelisk_entity_key: address): bool {
