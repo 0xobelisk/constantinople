@@ -1,4 +1,4 @@
-import { DevInspectResults, loadMetadata, Obelisk, TransactionBlock } from '@0xobelisk/client';
+import { DevInspectResults, loadMetadata, Obelisk, TransactionBlock } from '@0xobelisk/sui-client';
 import { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import { Map, DialogModal, PVPModal } from '../../components';

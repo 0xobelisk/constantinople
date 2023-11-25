@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { SuiMoveNormalizedModules } from '@0xobelisk/client';
+import { SuiMoveNormalizedModules } from '@0xobelisk/sui-client';
 
 export type MapDataType = {
   map: number[][];

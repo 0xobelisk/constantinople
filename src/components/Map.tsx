@@ -1,4 +1,4 @@
-import { Obelisk, TransactionBlock } from '@0xobelisk/client';
+import { Obelisk, TransactionBlock } from '@0xobelisk/sui-client';
 import { useEffect, useState, useRef, useMemo, ReactElement } from 'react';
 
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
@@ -380,8 +380,6 @@ export default function Map() {
       return;
     }
 
-    let left: number, top: number;
-
     let stepTransactionsItem = stepTransactions;
     let newPosition = heroPosition;
 
@@ -473,11 +471,11 @@ export default function Map() {
       });
       const stepTxB = new TransactionBlock();
       let tx_world_id = stepTxB.pure(WORLD_ID);
-      let tx_clock = stepTxB.pure("0x6");
+      let tx_clock = stepTxB.pure('0x6');
 
       for (let historyDirection of stepTransactionsItem) {
         let params = [tx_world_id, stepTxB.pure(historyDirection[0]), stepTxB.pure(historyDirection[1]), tx_clock];
-        obelisk.tx.map_system.move_t(stepTxB, params, true) as TransactionBlock;
+        obelisk.tx.map_system.move_t(stepTxB, params, undefined, true);
       }
 
       const response = await obelisk.signAndSendTxn(stepTxB);

@@ -1,4 +1,4 @@
-import { Ed25519Keypair, fromB64 } from '@0xobelisk/client';
+import { Ed25519Keypair, fromB64 } from '@0xobelisk/sui-client';
 import * as fs from 'fs';
 
 function generateAccount() {

@@ -3,7 +3,7 @@
 1 install sui <https://docs.sui.io/build/install>
 2 cd obelisk-nextjs-template folder 
 3 pnpm install
-4 yarn link "@0xobelisk/cli"
+4 yarn link "@0xobelisk/sui-cli"
 5 npm run dev
 ```
 

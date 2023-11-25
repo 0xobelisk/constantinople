@@ -1,4 +1,4 @@
-import { Obelisk, TransactionBlock } from '@0xobelisk/client';
+import { Obelisk, TransactionBlock } from '@0xobelisk/sui-client';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { SendTxLog, Hero, ContractMetadata, Monster, OwnedMonster } from '../state';
 import { NETWORK, PACKAGE_ID, WORLD_ID } from '../chain/config';
@@ -26,7 +26,7 @@ export default function PVPModal(props: any) {
     let tx = new TransactionBlock();
     let params = [tx.pure(WORLD_ID)];
 
-    await obelisk.tx.encounter_system.flee(tx, params, true);
+    await obelisk.tx.encounter_system.flee(tx, params, undefined, true);
 
     const response = await obelisk.signAndSendTxn(tx);
     console.log(response);
@@ -78,9 +78,9 @@ export default function PVPModal(props: any) {
     });
 
     let tx = new TransactionBlock();
-    let params = [tx.pure(WORLD_ID), tx.pure("0x6")];
+    let params = [tx.pure(WORLD_ID), tx.pure('0x6')];
 
-    let txb = await obelisk.tx.encounter_system.throw_ball(tx, params, true);
+    let txb = await obelisk.tx.encounter_system.throw_ball(tx, params, undefined, true);
     console.log(txb);
 
     const response = await obelisk.signAndSendTxn(tx);

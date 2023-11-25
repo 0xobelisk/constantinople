@@ -1,4 +1,4 @@
-import { loadMetadata, Obelisk, TransactionBlock, SuiTransactionBlockResponse } from '@0xobelisk/client';
+import { loadMetadata, Obelisk, TransactionBlock, SuiTransactionBlockResponse } from '@0xobelisk/sui-client';
 import { NETWORK, PACKAGE_ID, WORLD_ID } from '../src/chain/config';
 import { PRIVATEKEY } from '../src/chain/key';
 
