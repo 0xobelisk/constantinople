@@ -3,10 +3,12 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { SendTxLog, Hero, ContractMetadata, Monster, OwnedMonster } from '../state';
 import { NETWORK, PACKAGE_ID, WORLD_ID } from '../chain/config';
 import { PRIVATEKEY } from '../chain/key';
+import {TransactionResult} from "@0xobelisk/sui-client/src";
+import {useWallet} from "@suiet/wallet-kit";
 
 export default function PVPModal(props: any) {
   const catchResult = ['Catch monster successed!', 'Monster got away.', 'Catch miss'];
-
+  const wallet = useWallet()
   const [sendTxLog, setSendTxLog] = useAtom(SendTxLog);
   const contractMetadata = useAtomValue(ContractMetadata);
   const setMonster = useSetAtom(Monster);
@@ -26,34 +28,53 @@ export default function PVPModal(props: any) {
     let tx = new TransactionBlock();
     let params = [tx.pure(WORLD_ID)];
 
-    await obelisk.tx.encounter_system.flee(tx, params, undefined, true);
+    // await obelisk.tx.encounter_system.flee(tx, params, undefined, true);
 
-    const response = await obelisk.signAndSendTxn(tx);
-    console.log(response);
+
+    (await obelisk.tx.encounter_system.flee(tx, params, undefined, true)) as TransactionResult;
+
+    try {
+      const response = await wallet.signAndExecuteTransactionBlock({
+        transactionBlock: tx,
+        options: {
+          showEffects: true,
+          showObjectChanges: true,
+        },
+      })
+      console.log(response);
+      if (response.effects.status.status === 'success') {
+        alert('Run success');
+      } else {
+        alert('Fetch sui api failed.');
+      }
+      let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress());
+
+      const encounter_contain = await obelisk.containEntity(WORLD_ID, 'encounter', obelisk.getAddress());
+      console.log(encounter_contain);
+      console.log(JSON.stringify(player_data));
+      const stepLength = 2.5;
+      setHero({
+        name: obelisk.getAddress(),
+        position: { left: player_data[0] * stepLength, top: player_data[1] * stepLength },
+        lock: encounter_contain,
+      });
+      setMonster({
+        exist: encounter_contain,
+      });
+      if (encounter_contain === false) {
+        setSendTxLog({ ...sendTxLog, display: false });
+      }
+    } catch (e) {
+      alert("failed");
+      console.error("failed", e);
+    }
+
+    // const response = await obelisk.signAndSendTxn(tx);
+    // console.log(response);
     // }
-    if (response.effects.status.status === 'success') {
-      alert('Run success');
-    } else {
-      alert('Fetch sui api failed.');
-    }
 
-    let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress());
 
-    const encounter_contain = await obelisk.containEntity(WORLD_ID, 'encounter', obelisk.getAddress());
-    console.log(encounter_contain);
-    console.log(JSON.stringify(player_data));
-    const stepLength = 2.5;
-    setHero({
-      name: obelisk.getAddress(),
-      position: { left: player_data[0] * stepLength, top: player_data[1] * stepLength },
-      lock: encounter_contain,
-    });
-    setMonster({
-      exist: encounter_contain,
-    });
-    if (encounter_contain === false) {
-      setSendTxLog({ ...sendTxLog, display: false });
-    }
+
     // if (sendTxLog.onNo !== undefined) {
     //   sendTxLog.onNo();
     // }
@@ -80,48 +101,64 @@ export default function PVPModal(props: any) {
     let tx = new TransactionBlock();
     let params = [tx.pure(WORLD_ID), tx.pure('0x6')];
 
-    let txb = await obelisk.tx.encounter_system.throw_ball(tx, params, undefined, true);
-    console.log(txb);
+    // let txb = await obelisk.tx.encounter_system.throw_ball(tx, params, undefined, true);
+    // console.log(txb);
+    (await obelisk.tx.encounter_system.throw_ball(tx, params, undefined, true)) as TransactionResult;
 
-    const response = await obelisk.signAndSendTxn(tx);
-    console.log(response);
-    let catch_result = -1;
-    if (response.effects.status.status === 'success') {
-      response.events.map(event => {
-        let obelisk_schema_id = event.parsedJson['_obelisk_schema_id'];
-        console.log(obelisk_schema_id);
-        const textDecoder = new TextDecoder('utf-8');
-        const obelisk_schema_name = textDecoder.decode(new Uint8Array(obelisk_schema_id));
+    // const response = await obelisk.signAndSendTxn(tx);
+    // console.log(response);
+    try {
+      const response =  await wallet.signAndExecuteTransactionBlock({
+        transactionBlock: tx,
+        options: {
+          showEffects: true,
+          showObjectChanges: true,
+        },
+      })
+      console.log(response);
+      let catch_result = -1;
+      if (response.effects.status.status === 'success') {
+        response.events.map(event => {
+          let obelisk_schema_id = event.parsedJson['_obelisk_schema_id'];
+          console.log(obelisk_schema_id);
+          const textDecoder = new TextDecoder('utf-8');
+          const obelisk_schema_name = textDecoder.decode(new Uint8Array(obelisk_schema_id));
 
-        if (obelisk_schema_name === 'catch_result') {
-          catch_result = event.parsedJson['data']['value'];
-        }
+          if (obelisk_schema_name === 'catch_result') {
+            catch_result = event.parsedJson['data']['value'];
+          }
+        });
+      } else {
+        alert('Fetch sui api failed.');
+      }
+      let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress());
+
+      const encounter_contain = await obelisk.containEntity(WORLD_ID, 'encounter', obelisk.getAddress());
+      console.log(encounter_contain);
+      console.log(JSON.stringify(player_data));
+      const stepLength = 2.5;
+      setHero({
+        name: obelisk.getAddress(),
+        position: { left: player_data[0] * stepLength, top: player_data[1] * stepLength },
+        lock: encounter_contain,
       });
-    } else {
-      alert('Fetch sui api failed.');
+      setMonster({
+        exist: encounter_contain,
+      });
+      if (encounter_contain === false) {
+        setSendTxLog({ ...sendTxLog, display: false });
+        console.log('catch successed');
+      } else {
+        console.log('catch failed');
+      }
+      console.log(`here  ------ ${catch_result}`);
+      alert(catchResult[catch_result]);
+    } catch (e) {
+      alert("failed");
+      console.error("failed", e);
     }
-    let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress());
 
-    const encounter_contain = await obelisk.containEntity(WORLD_ID, 'encounter', obelisk.getAddress());
-    console.log(encounter_contain);
-    console.log(JSON.stringify(player_data));
-    const stepLength = 2.5;
-    setHero({
-      name: obelisk.getAddress(),
-      position: { left: player_data[0] * stepLength, top: player_data[1] * stepLength },
-      lock: encounter_contain,
-    });
-    setMonster({
-      exist: encounter_contain,
-    });
-    if (encounter_contain === false) {
-      setSendTxLog({ ...sendTxLog, display: false });
-      console.log('catch successed');
-    } else {
-      console.log('catch failed');
-    }
-    console.log(`here  ------ ${catch_result}`);
-    alert(catchResult[catch_result]);
+
   };
 
   return (

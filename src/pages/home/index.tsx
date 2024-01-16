@@ -1,4 +1,4 @@
-import { DevInspectResults, loadMetadata, Obelisk, TransactionBlock } from '@0xobelisk/sui-client';
+import { DevInspectResults, loadMetadata, Obelisk, TransactionBlock, TransactionResult } from '@0xobelisk/sui-client';
 import { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import { Map, DialogModal, PVPModal } from '../../components';
@@ -7,9 +7,11 @@ import { useRouter } from 'next/router';
 import { NETWORK, PACKAGE_ID, WORLD_ID } from '../../chain/config';
 import { obeliskConfig } from '../../../obelisk.config';
 import { PRIVATEKEY } from '../../chain/key';
+import {ConnectButton, useWallet } from '@suiet/wallet-kit';
 
 const Home = () => {
   const router = useRouter();
+  const wallet = useWallet()
   const [isLoading, setIsLoading] = useState(false);
   const [mapData, setMapData] = useAtom(MapData);
   const [contractMetadata, setContractMetadata] = useAtom(ContractMetadata);
@@ -26,30 +28,42 @@ const Home = () => {
       networkType: NETWORK,
       packageId: PACKAGE_ID,
       metadata: metadata,
-      secretKey: PRIVATEKEY,
+      // secretKey: PRIVATEKEY,
     });
-
-    console.log(obelisk.getAddress());
-
-    let have_player = await obelisk.containEntity(WORLD_ID, 'position', obelisk.getAddress());
+    const address = wallet.address
+    console.log(address);
+    let have_player = await obelisk.containEntity(WORLD_ID, 'position', address);
     if (have_player === undefined) {
       alert('Fetch sui api error!');
     } else {
       if (have_player === false) {
         const tx = new TransactionBlock();
         const params = [tx.pure(WORLD_ID), tx.pure(0), tx.pure(0)];
-        await obelisk.tx.map_system.register(tx, params);
+        (await obelisk.tx.map_system.register(tx, params, undefined, true)) as TransactionResult;
+        try {
+          await wallet.signAndExecuteTransactionBlock({
+            transactionBlock: tx,
+            options: {
+              showEffects: true,
+              showObjectChanges: true,
+            },
+          })
+        } catch (e) {
+          alert("failed");
+          console.error("failed", e);
+        }
+        // await obelisk.tx.map_system.register(tx, params);
       }
     }
-    let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress());
+    let player_data = await obelisk.getEntity(WORLD_ID, 'position', address);
 
     const map_data = await obelisk.getEntity(WORLD_ID, 'map');
     console.log(map_data);
     console.log(WORLD_ID);
-    console.log(obelisk.getAddress());
+    console.log(address);
     // const encounter_contain = await obelisk.query.encounter_comp.contains(new_tx, new_params) as DevInspectResults;
 
-    const owned_monsters = await obelisk.getEntity(WORLD_ID, 'owned_monsters', obelisk.getAddress());
+    const owned_monsters = await obelisk.getEntity(WORLD_ID, 'owned_monsters', address);
     if (owned_monsters !== undefined) {
       // dispatch(setOwnedMonster(
       //   owned_monsters
@@ -57,12 +71,12 @@ const Home = () => {
       setOwnedMonster(owned_monsters[0]);
     }
 
-    const encounter_contain = await obelisk.containEntity(WORLD_ID, 'encounter', obelisk.getAddress());
+    const encounter_contain = await obelisk.containEntity(WORLD_ID, 'encounter', address);
 
     console.log(JSON.stringify(player_data));
     const stepLength = 2.5;
     setHero({
-      name: obelisk.getAddress(),
+      name: address,
       position: { left: player_data[0] * stepLength, top: player_data[1] * stepLength },
       lock: encounter_contain!,
     });
@@ -188,10 +202,12 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (router.isReady) {
+
+    if (router.isReady && wallet?.connected && wallet?.address) {
+      console.log(1)
       rpgworld();
     }
-  }, [router.isReady]);
+  }, [router.isReady, wallet?.connected, wallet?.address]);
 
   // const ownedMonster = useSelector(state => state["ownedMonster"])
   if (isLoading) {
@@ -201,7 +217,7 @@ const Home = () => {
           <Map />
           {/* <!-- Inputs --> */}
           <div style={{ width: 'calc(20vw - 1rem)', maxHeight: '100vh', marginLeft: '10px' }}>
-            {/* { page === 1 && 
+            {/* { page === 1 &&
               <>
                 <GenMap />
                 <ViewMap />
@@ -215,7 +231,7 @@ const Home = () => {
         </div>
         <DialogModal />
         <PVPModal />
-        {/* <audio preload="auto" autoPlay loop>     
+        {/* <audio preload="auto" autoPlay loop>
         <source src="/assets/music/home.mp3" type="audio/mpeg" />
       </audio> */}
         <div className="mx-2 my-2 bg-white text-black">
@@ -230,7 +246,11 @@ const Home = () => {
       </div>
     );
   } else {
-    <></>;
+    return (
+        <div>
+          <ConnectButton>Connect Wallet</ConnectButton>
+        </div>
+    )
   }
 };
 
