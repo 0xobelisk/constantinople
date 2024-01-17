@@ -5,6 +5,8 @@ import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import { MapData, ContractMetadata, Dialog, SendTxLog, Hero, Monster, OwnedMonster } from '../state';
 import { NETWORK, PACKAGE_ID, WORLD_ID } from '../chain/config';
 import { PRIVATEKEY } from '../chain/key';
+import {TransactionResult} from "@0xobelisk/sui-client/src";
+import {useWallet} from "@suiet/wallet-kit";
 
 export default function Map() {
   const treasureCount = 2;
@@ -16,6 +18,8 @@ export default function Map() {
     A: 'assets/player/A.gif',
     D: 'assets/player/D.gif',
   };
+
+  const wallet = useWallet()
 
   const [heroImg, setHeroImg] = useState(playerSprites['S']);
 
@@ -467,7 +471,7 @@ export default function Map() {
         networkType: NETWORK,
         packageId: PACKAGE_ID,
         metadata: contractMetadata,
-        secretKey: PRIVATEKEY,
+        // secretKey: PRIVATEKEY,
       });
       const stepTxB = new TransactionBlock();
       let tx_world_id = stepTxB.pure(WORLD_ID);
@@ -475,11 +479,26 @@ export default function Map() {
 
       for (let historyDirection of stepTransactionsItem) {
         let params = [tx_world_id, stepTxB.pure(historyDirection[0]), stepTxB.pure(historyDirection[1]), tx_clock];
-        obelisk.tx.map_system.move_t(stepTxB, params, undefined, true);
+        // obelisk.tx.map_system.move_t(stepTxB, params, undefined, true);
+        (await obelisk.tx.map_system.move_t(stepTxB, params, undefined, true)) as TransactionResult;
       }
 
-      const response = await obelisk.signAndSendTxn(stepTxB);
-      console.log(response);
+      try {
+        const response = await wallet.signAndExecuteTransactionBlock({
+          transactionBlock: stepTxB,
+          options: {
+            showEffects: true,
+            showObjectChanges: true,
+          },
+        })
+        console.log(response);
+      } catch (e) {
+        alert("failed");
+        console.error("failed", e);
+      }
+
+      // const response = await obelisk.signAndSendTxn(stepTxB);
+      // console.log(response);
     }
   };
 
@@ -929,7 +948,7 @@ export default function Map() {
           </>
         ))}
       </div>
-      {/* <audio preload="auto" autoPlay loop>     
+      {/* <audio preload="auto" autoPlay loop>
         <source src="/assets/music/home.mp3" type="audio/mpeg" />
       </audio> */}
     </>

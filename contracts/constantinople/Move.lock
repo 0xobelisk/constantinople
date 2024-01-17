@@ -3,7 +3,7 @@
 [move]
 version = 0
 manifest_digest = "EF7DA5B9F22668A3B194F5C50EA1615D2AA089406768FC799534419BBBCD1C5E"
-deps_digest = "112928C94A84031C09CD9B9D1D44B149B73FC0EEA5FA8D8B2D7CA4D91936335A"
+deps_digest = "F8BBB0CCB2491CA29A3DF03D6F92277A4F3574266507ACD77214D37ECA3F3082"
 
 dependencies = [
   { name = "Sui" },
@@ -20,3 +20,8 @@ source = { git = "https://github.com/MystenLabs/sui.git", rev = "testnet-v1.8.0"
 dependencies = [
   { name = "MoveStdlib" },
 ]
+
+[move.toolchain-version]
+compiler-version = "1.16.0"
+edition = "legacy"
+flavor = "sui"
