@@ -4,9 +4,9 @@ import { useEffect, useState, useRef, useMemo, ReactElement } from 'react';
 import { useAtom, useSetAtom, useAtomValue } from 'jotai';
 import { MapData, ContractMetadata, Dialog, SendTxLog, Hero, Monster, OwnedMonster } from '../state';
 import { NETWORK, PACKAGE_ID, WORLD_ID } from '../chain/config';
-import { PRIVATEKEY } from '../chain/key';
-import {TransactionResult} from "@0xobelisk/sui-client/src";
-import {useWallet} from "@suiet/wallet-kit";
+// import { PRIVATEKEY } from '../chain/key';
+import { TransactionResult } from '@0xobelisk/sui-client/src';
+import { useWallet } from '@suiet/wallet-kit';
 
 export default function Map() {
   const treasureCount = 2;
@@ -19,7 +19,7 @@ export default function Map() {
     D: 'assets/player/D.gif',
   };
 
-  const wallet = useWallet()
+  const wallet = useWallet();
 
   const [heroImg, setHeroImg] = useState(playerSprites['S']);
 
@@ -430,7 +430,7 @@ export default function Map() {
         networkType: NETWORK,
         packageId: PACKAGE_ID,
         metadata: contractMetadata,
-        secretKey: PRIVATEKEY,
+        // secretKey: PRIVATEKEY,
       });
 
       let player_data = await obelisk.getEntity(WORLD_ID, 'position', obelisk.getAddress());
@@ -490,11 +490,11 @@ export default function Map() {
             showEffects: true,
             showObjectChanges: true,
           },
-        })
+        });
         console.log(response);
       } catch (e) {
-        alert("failed");
-        console.error("failed", e);
+        alert('failed');
+        console.error('failed', e);
       }
 
       // const response = await obelisk.signAndSendTxn(stepTxB);

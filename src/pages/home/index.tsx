@@ -1,4 +1,4 @@
-import { DevInspectResults, loadMetadata, Obelisk, TransactionBlock, TransactionResult } from '@0xobelisk/sui-client';
+import { loadMetadata, Obelisk, TransactionBlock, TransactionResult } from '@0xobelisk/sui-client';
 import { useEffect, useState } from 'react';
 import { useAtom } from 'jotai';
 import { Map, DialogModal, PVPModal } from '../../components';
@@ -6,12 +6,12 @@ import { MapData, ContractMetadata, Monster, OwnedMonster, Hero } from '../../st
 import { useRouter } from 'next/router';
 import { NETWORK, PACKAGE_ID, WORLD_ID } from '../../chain/config';
 import { obeliskConfig } from '../../../obelisk.config';
-import { PRIVATEKEY } from '../../chain/key';
-import {ConnectButton, useWallet } from '@suiet/wallet-kit';
+// import { PRIVATEKEY } from '../../chain/key';
+import { ConnectButton, useWallet } from '@suiet/wallet-kit';
 
 const Home = () => {
   const router = useRouter();
-  const wallet = useWallet()
+  const wallet = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [mapData, setMapData] = useAtom(MapData);
   const [contractMetadata, setContractMetadata] = useAtom(ContractMetadata);
@@ -30,7 +30,7 @@ const Home = () => {
       metadata: metadata,
       // secretKey: PRIVATEKEY,
     });
-    const address = wallet.address
+    const address = wallet.address;
     console.log(address);
     let have_player = await obelisk.containEntity(WORLD_ID, 'position', address);
     if (have_player === undefined) {
@@ -47,10 +47,10 @@ const Home = () => {
               showEffects: true,
               showObjectChanges: true,
             },
-          })
+          });
         } catch (e) {
-          alert("failed");
-          console.error("failed", e);
+          alert('failed');
+          console.error('failed', e);
         }
         // await obelisk.tx.map_system.register(tx, params);
       }
@@ -202,9 +202,8 @@ const Home = () => {
   };
 
   useEffect(() => {
-
     if (router.isReady && wallet?.connected && wallet?.address) {
-      console.log(1)
+      console.log(1);
       rpgworld();
     }
   }, [router.isReady, wallet?.connected, wallet?.address]);
@@ -247,10 +246,10 @@ const Home = () => {
     );
   } else {
     return (
-        <div>
-          <ConnectButton>Connect Wallet</ConnectButton>
-        </div>
-    )
+      <div>
+        <ConnectButton>Connect Wallet</ConnectButton>
+      </div>
+    );
   }
 };
 

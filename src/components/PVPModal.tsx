@@ -2,13 +2,12 @@ import { Obelisk, TransactionBlock } from '@0xobelisk/sui-client';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { SendTxLog, Hero, ContractMetadata, Monster, OwnedMonster } from '../state';
 import { NETWORK, PACKAGE_ID, WORLD_ID } from '../chain/config';
-import { PRIVATEKEY } from '../chain/key';
-import {TransactionResult} from "@0xobelisk/sui-client/src";
-import {useWallet} from "@suiet/wallet-kit";
+import { TransactionResult } from '@0xobelisk/sui-client/src';
+import { useWallet } from '@suiet/wallet-kit';
 
 export default function PVPModal(props: any) {
   const catchResult = ['Catch monster successed!', 'Monster got away.', 'Catch miss'];
-  const wallet = useWallet()
+  const wallet = useWallet();
   const [sendTxLog, setSendTxLog] = useAtom(SendTxLog);
   const contractMetadata = useAtomValue(ContractMetadata);
   const setMonster = useSetAtom(Monster);
@@ -22,14 +21,13 @@ export default function PVPModal(props: any) {
       networkType: NETWORK,
       packageId: PACKAGE_ID,
       metadata: contractMetadata,
-      secretKey: PRIVATEKEY,
+      // secretKey: PRIVATEKEY,
     });
 
     let tx = new TransactionBlock();
     let params = [tx.pure(WORLD_ID)];
 
     // await obelisk.tx.encounter_system.flee(tx, params, undefined, true);
-
 
     (await obelisk.tx.encounter_system.flee(tx, params, undefined, true)) as TransactionResult;
 
@@ -40,7 +38,7 @@ export default function PVPModal(props: any) {
           showEffects: true,
           showObjectChanges: true,
         },
-      })
+      });
       console.log(response);
       if (response.effects.status.status === 'success') {
         alert('Run success');
@@ -65,15 +63,13 @@ export default function PVPModal(props: any) {
         setSendTxLog({ ...sendTxLog, display: false });
       }
     } catch (e) {
-      alert("failed");
-      console.error("failed", e);
+      alert('failed');
+      console.error('failed', e);
     }
 
     // const response = await obelisk.signAndSendTxn(tx);
     // console.log(response);
     // }
-
-
 
     // if (sendTxLog.onNo !== undefined) {
     //   sendTxLog.onNo();
@@ -95,7 +91,7 @@ export default function PVPModal(props: any) {
       networkType: NETWORK,
       packageId: PACKAGE_ID,
       metadata: contractMetadata,
-      secretKey: PRIVATEKEY,
+      // secretKey: PRIVATEKEY,
     });
 
     let tx = new TransactionBlock();
@@ -108,13 +104,13 @@ export default function PVPModal(props: any) {
     // const response = await obelisk.signAndSendTxn(tx);
     // console.log(response);
     try {
-      const response =  await wallet.signAndExecuteTransactionBlock({
+      const response = await wallet.signAndExecuteTransactionBlock({
         transactionBlock: tx,
         options: {
           showEffects: true,
           showObjectChanges: true,
         },
-      })
+      });
       console.log(response);
       let catch_result = -1;
       if (response.effects.status.status === 'success') {
@@ -154,11 +150,9 @@ export default function PVPModal(props: any) {
       console.log(`here  ------ ${catch_result}`);
       alert(catchResult[catch_result]);
     } catch (e) {
-      alert("failed");
-      console.error("failed", e);
+      alert('failed');
+      console.error('failed', e);
     }
-
-
   };
 
   return (
