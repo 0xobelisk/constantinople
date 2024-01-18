@@ -1,6 +1,6 @@
 import { loadMetadata, Obelisk, TransactionBlock, SuiTransactionBlockResponse } from '@0xobelisk/sui-client';
 import { NETWORK, PACKAGE_ID, WORLD_ID } from '../src/chain/config';
-import { PRIVATEKEY } from '../src/chain/key';
+// import { PRIVATEKEY } from '../src/chain/key';
 
 async function main() {
   const metadata = await loadMetadata(NETWORK, PACKAGE_ID);
@@ -9,7 +9,7 @@ async function main() {
     networkType: NETWORK,
     packageId: PACKAGE_ID,
     metadata: metadata,
-    secretKey: PRIVATEKEY,
+    // secretKey: PRIVATEKEY,
   });
 
   let tx = new TransactionBlock();
