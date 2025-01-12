@@ -5,7 +5,7 @@ import { Map, DialogModal, PVPModal } from '../../components';
 import { MapData, ContractMetadata, Monster, OwnedMonster, Hero } from '../../state';
 import { useRouter } from 'next/router';
 import { NETWORK, PACKAGE_ID, WORLD_ID } from '../../chain/config';
-import { obeliskConfig } from '../../../obelisk.config';
+import { dubheConfig } from '../../../dubhe.config';
 // import { PRIVATEKEY } from '../../chain/key';
 import { ConnectButton, useWallet } from '@suiet/wallet-kit';
 

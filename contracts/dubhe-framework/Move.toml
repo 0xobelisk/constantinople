@@ -1,12 +1,13 @@
 [package]
-name = "constantinople"
-version = "1.0.0"
+name = "Dubhe"
 edition = "2024"
+version = "1.0.0"
+license = "apache2.0"
+authors = ["Obelisk Labs"]
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "mainnet-v1.38.3" }
-Dubhe = { git = "https://github.com/0xobelisk/dubhe-framework.git", rev = "dubhe-testnet-v1.1.0" }
 
 [addresses]
-sui = "0x2"
-constantinople = "0x0"
+dubhe = "0x0"
+

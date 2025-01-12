@@ -26,7 +26,7 @@
     "world-upgrade-testnet": "obelisk upgrade --network testnet && ts-node scripts/storeConfig.ts testnet",
     "world-upgrade-mainnet": "obelisk upgrade --network mainnet && ts-node scripts/storeConfig.ts mainnet",
     "localnode": "nohup obelisk localnode > localnode.nohup.out &",
-    "worldgen": "obelisk schemagen obelisk.config.ts",
+    "worldgen": "obelisk schemagen dubhe.config.ts",
     "storeConfig": "ts-node scripts/storeConfig.ts",
     "generateAccount": "ts-node scripts/generateAccount.ts"
   },
