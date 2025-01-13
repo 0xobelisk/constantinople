@@ -26,26 +26,16 @@
             let  t = terrain_type::new_tall_grass();
             let  b = terrain_type::new_boulder();
 			let terrains = vector[
-             vector [o, o, o, o, o, o, t, o, o, o, o, o, o, o, o, o, o, o, o, o],
-             vector [o, o, t, o, o, o, o, o, t, o, o, o, o, b, o, o, o, o, o, o],
-             vector [o, t, t, t, t, o, o, o, o, o, o, o, o, o, o, t, t, o, o, o],
-             vector [o, o, t, t, t, t, o, o, o, o, b, o, o, o, o, o, t, o, o, o],
-             vector [o, o, o, o, t, t, o, o, o, o, o, o, o, o, o, o, o, t, o, o],
-             vector [o, o, o, b, b, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o],
-             vector [o, t, o, o, o, b, b, o, o, o, o, t, o, o, o, o, o, b, o, o],
-             vector [o, o, t, t, o, o, o, o, o, t, o, b, o, o, t, o, b, o, o, o],
-             vector [o, o, t, o, o, o, o, t, t, t, o, b, b, o, o, o, o, o, o, o],
-             vector [o, o, o, o, o, o, o, t, t, t, o, b, t, o, t, t, o, o, o, o],
-             vector [o, b, o, o, o, b, o, o, t, t, o, b, o, o, t, t, o, o, o, o],
-             vector [o, o, b, o, o, o, t, o, t, t, o, o, b, t, t, t, o, o, o, o],
-             vector [o, o, b, b, o, o, o, o, t, o, o, o, b, o, t, o, o, o, o, o],
-             vector [o, o, o, b, b, o, o, o, o, o, o, o, o, b, o, t, o, o, o, o],
-             vector [o, o, o, o, b, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o],
-             vector [o, o, o, o, o, o, o, o, o, o, b, b, o, o, t, o, o, o, o, o],
-             vector [o, o, o, o, t, o, o, o, t, b, o, o, o, t, t, o, b, o, o, o],
-             vector [o, o, o, t, o, t, t, t, o, o, o, o, o, t, o, o, o, o, o, o],
-             vector [o, o, o, t, t, t, t, o, o, o, o, t, o, o, o, t, o, o, o, o],
-             vector [o, o, o, o, o, t, o, o, o, o, o, o, o, o, o, o, o, o, o, o]
+             vector [t, o, o, o, o, o, t, o, o, o],
+             vector [t, t, t, o, o, o, o, o, o, o],
+             vector [t, t, t, t, o, o, o, o, b, o],
+             vector [o, o, t, t, o, o, o, o, o, o],
+             vector [o, b, b, o, o, o, o, o, o, o],
+             vector [o, o, o, b, b, o, o, o, o, t],
+             vector [t, t, o, o, o, o, o, t, o, b],
+             vector [t, o, o, o, o, t, t, t, o, b],
+             vector [o, o, o, o, o, t, t, t, o, b],
+             vector [o, o, o, b, o, o, t, t, o, b],
             ];
 
         let height = terrains.length();
@@ -60,24 +50,24 @@
                 let terrain = terrains[y][x];
                 let entity_key = constantinople::map_system::position_to_address(x, y);
                 let position = constantinople::position::new(x, y);
-                map.position().insert(entity_key, position);
+                map.position().set(entity_key, position);
                 // std::debug::print(&position);
                 // std::debug::print(&terrain);
                 if (terrain == terrain_type::new_none()) {
-                    entity.obstruction().insert(entity_key, false);
-                    entity.encounterable().insert(entity_key, false);
-                    entity.moveable().insert(entity_key, false);
-                    encounter.trigger().insert(entity_key, false);
+                    entity.obstruction().set(entity_key, false);
+                    entity.encounterable().set(entity_key, false);
+                    entity.moveable().set(entity_key, false);
+                    encounter.trigger().set(entity_key, false);
                 } else if (terrain == terrain_type::new_boulder()) {
-                    entity.obstruction().insert(entity_key, true);
-                    entity.encounterable().insert(entity_key, false);
-                    entity.moveable().insert(entity_key, false);
-                    encounter.trigger().insert(entity_key, false);
+                    entity.obstruction().set(entity_key, true);
+                    entity.encounterable().set(entity_key, false);
+                    entity.moveable().set(entity_key, false);
+                    encounter.trigger().set(entity_key, false);
                 } else if (terrain == terrain_type::new_tall_grass()) {
-                    entity.obstruction().insert(entity_key, false);
-                    entity.encounterable().insert(entity_key, false);
-                    entity.moveable().insert(entity_key, false);
-                    encounter.trigger().insert(entity_key, true);
+                    entity.obstruction().set(entity_key, false);
+                    entity.encounterable().set(entity_key, false);
+                    entity.moveable().set(entity_key, false);
+                    encounter.trigger().set(entity_key, true);
                 }
             });
         });
