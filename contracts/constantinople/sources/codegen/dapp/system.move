@@ -23,7 +23,7 @@ module constantinople::dapp_system {
   public(package) fun create(name: String, description: String, clock: &Clock, ctx: &mut TxContext): Dapp {
     let mut dapp = dapp_schema::create(ctx);
     assert!(!dapp.borrow_metadata().contains(), 0);
-    dapp.borrow_mut_metadata().set(
+    dapp.metadata().set(
             dapp_metadata::new(
                 name,
                 description,
@@ -34,11 +34,11 @@ module constantinople::dapp_system {
             )
         );
     let package_id = type_info::current_package_id<DappKey>();
-    dapp.borrow_mut_package_id().set(package_id);
-    dapp.borrow_mut_admin().set(ctx.sender());
-    dapp.borrow_mut_version().set(1);
-    dapp.borrow_mut_safe_mode().set(false);
-    dapp.borrow_mut_schemas().set(vector[]);
+    dapp.package_id().set(package_id);
+    dapp.admin().set(ctx.sender());
+    dapp.version().set(1);
+    dapp.safe_mode().set(false);
+    dapp.schemas().set(vector[]);
     dapp
   }
 
@@ -51,10 +51,10 @@ module constantinople::dapp_system {
     partners: vector<String>,
     ctx: &TxContext,
   ) {
-    assert!(dapp.borrow_admin().contains(), 0);
-    assert!(dapp.borrow_admin().get() == ctx.sender(), 0);
-    let created_at = dapp.borrow_mut_metadata().take().get_created_at();
-    dapp.borrow_mut_metadata().set(
+    let admin = dapp.admin().try_get();
+    assert!(admin == option::some(ctx.sender()), 0);
+    let created_at = dapp.metadata().get().get_created_at();
+    dapp.metadata().set(
             dapp_metadata::new(
                 name,
                 description,
@@ -67,19 +67,19 @@ module constantinople::dapp_system {
   }
 
   public entry fun transfer_ownership(dapp: &mut Dapp, new_admin: address, ctx: &mut TxContext) {
-    assert!(dapp.borrow_admin().contains(), 0);
-    assert!(dapp.borrow_admin().get() == ctx.sender(), 0);
-    dapp.borrow_mut_admin().set(new_admin);
+    let admin = dapp.admin().try_get();
+    assert!(admin == option::some(ctx.sender()), 0);
+    dapp.admin().set(new_admin);
   }
 
   public entry fun set_safe_mode(dapp: &mut Dapp, safe_mode: bool, ctx: &TxContext) {
-    assert!(dapp.borrow_admin().contains(), 0);
-    assert!(dapp.borrow_admin().get() == ctx.sender(), 0);
-    dapp.borrow_mut_safe_mode().set(safe_mode);
+    let admin = dapp.admin().try_get();
+    assert!(admin == option::some(ctx.sender()), 0);
+    dapp.safe_mode().set(safe_mode);
   }
 
   public fun ensure_no_safe_mode(dapp: &Dapp) {
-    assert!(!dapp.borrow_safe_mode().get(), 0);
+    assert!(!dapp.borrow_safe_mode()[], 0);
   }
 
   public fun ensure_has_authority(dapp: &Dapp, ctx: &TxContext) {

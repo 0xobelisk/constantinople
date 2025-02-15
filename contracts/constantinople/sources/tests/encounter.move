@@ -1,16 +1,12 @@
 #[test_only]
 module constantinople::encounter_test {
-    use std::debug;
     use sui::random::Random;
     use sui::random;
     use sui::test_scenario;
     use constantinople::map_system;
     use constantinople::encounter_system;
-    use constantinople::entity_schema::Entity;
-    use constantinople::map_schema::Map;
-    use constantinople::direction;
-    use constantinople::encounter_schema::Encounter;
     use constantinople::init_test;
+    use constantinople::schema::Schema;
 
     #[test]
     public fun throw_ball(){
@@ -20,46 +16,38 @@ module constantinople::encounter_test {
             scenario.next_tx(@0xA);
         };
 
-        let mut map = test_scenario::take_shared<Map>(&scenario);
-        let mut entity = test_scenario::take_shared<Entity>(&scenario);
-        let mut encounter = test_scenario::take_shared<Encounter>(&scenario);
+        let mut schema = test_scenario::take_shared<Schema>(&scenario);
         let random = test_scenario::take_shared<Random>(&scenario);
 
         let ctx = test_scenario::ctx(&mut scenario);
-        map_system::register(&mut map, &mut entity, 0, 0, ctx);
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_east(), ctx);
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_south(), ctx);
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_east(), ctx);
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_south(), ctx);
+        map_system::register(&mut schema, 8, 3, ctx);
+        map_system::move_position(&mut schema, &random, 3, ctx);
+        map_system::move_position(&mut schema, &random, 3, ctx);
 
         // Cannot move during an encounter
-        let monster_info = encounter.monster_info().get(ctx.sender());
-        assert!(encounter.monster_info().get(ctx.sender()).get_catch_attempts() == 0);
-        encounter_system::throw_ball(&mut entity, &mut encounter, &random, ctx);
-        assert!(encounter.monster_info().get(ctx.sender()).get_catch_attempts() == 1);
-        encounter_system::throw_ball(&mut entity, &mut encounter, &random, ctx);
-        assert!(encounter.monster_info().get(ctx.sender()).get_catch_attempts() == 2);
-        encounter_system::throw_ball(&mut entity, &mut encounter, &random, ctx);
+        let encounter_info = schema.encounter()[ctx.sender()];
+        assert!(schema.encounter().get(ctx.sender()).get_catch_attempts() == 0);
+        encounter_system::throw_ball(&mut schema, &random, ctx);
+        assert!(schema.encounter().get(ctx.sender()).get_catch_attempts() == 1);
+        encounter_system::throw_ball(&mut schema, &random, ctx);
+        assert!(schema.encounter().get(ctx.sender()).get_catch_attempts() == 2);
+        encounter_system::throw_ball(&mut schema, &random, ctx);
 
-        assert!(encounter.monster_info().contains_key(ctx.sender()) == false);
-        assert!(entity.owned_by().get(ctx.sender()) == vector[monster_info.get_monster()]);
+        assert!(schema.encounter().contains(ctx.sender()) == false);
+        assert!(schema.monster().contains(encounter_info.get_monster()) == false);
 
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_east(), ctx);
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_east(), ctx);
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_west(), ctx);
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_east(), ctx);
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_west(), ctx);
+        map_system::move_position(&mut schema, &random, 3, ctx);
+        map_system::move_position(&mut schema, &random, 3, ctx);
 
-        // let monster_info = encounter.monster_info().get(ctx.sender());
-        encounter_system::throw_ball(&mut entity, &mut encounter, &random, ctx);
-        let monsters = entity.owned_by().get(ctx.sender());
-        debug::print(&entity.monster().get(monsters[0]));
-        debug::print(&entity.monster().get(monsters[1]));
+        encounter_system::throw_ball(&mut schema, &random, ctx);
+        let expect_monster_address = @0x0;
+        let expect_monster_type = constantinople::monster_type::new_eagle();
+        assert!(schema.monster().get(expect_monster_address) == expect_monster_type);
+        assert!(schema.owned_by().get(expect_monster_address) == ctx.sender());
+        assert!(schema.encounter().contains(ctx.sender()) == false);
 
         test_scenario::return_shared(random);
-        test_scenario::return_shared(encounter);
-        test_scenario::return_shared(entity);
-        test_scenario::return_shared(map);
+        test_scenario::return_shared(schema);
 
         dapp.distroy_dapp_for_testing();
         scenario.end();
@@ -73,36 +61,23 @@ module constantinople::encounter_test {
             scenario.next_tx(@0xA);
         };
 
-        let mut map = test_scenario::take_shared<Map>(&scenario);
-        let mut entity = test_scenario::take_shared<Entity>(&scenario);
-        let mut encounter = test_scenario::take_shared<Encounter>(&scenario);
+        let mut schema = test_scenario::take_shared<Schema>(&scenario);
         let random = test_scenario::take_shared<Random>(&scenario);
 
         let ctx = test_scenario::ctx(&mut scenario);
-        map_system::register(&mut map, &mut entity, 0, 0, ctx);
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_east(), ctx);
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_south(), ctx);
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_east(), ctx);
-        map_system::move_position(&mut map, &mut entity, &mut encounter, &random, direction::new_south(), ctx);
+        map_system::register(&mut schema, 8, 3, ctx);
+        map_system::move_position(&mut schema, &random, 3, ctx);
+        map_system::move_position(&mut schema, &random, 3, ctx);
 
+        let encounter_info = schema.encounter()[ctx.sender()];
         // Cannot move during an encounter
-        let monster_info = encounter.monster_info().get(ctx.sender());
-        assert!(encounter.monster_info().get(ctx.sender()).get_catch_attempts() == 0);
-        encounter_system::throw_ball(&mut entity, &mut encounter, &random, ctx);
-        assert!(encounter.monster_info().get(ctx.sender()).get_catch_attempts() == 1);
-        debug::print(&entity.owned_by().get(ctx.sender()));
+        encounter_system::flee(&mut schema, ctx);
 
-        encounter_system::flee(&mut entity, &mut encounter, ctx);
-
-        assert!(encounter.monster_info().contains_key(ctx.sender()) == false);
-        assert!(entity.owned_by().get(ctx.sender()) == vector[]);
-        assert!(entity.monster().contains_key(monster_info.get_monster()) == false);
+        assert!(schema.encounter().contains(ctx.sender()) == false);
+        assert!(schema.monster().contains(encounter_info.get_monster()) == false);
 
         test_scenario::return_shared(random);
-        test_scenario::return_shared(encounter);
-        test_scenario::return_shared(entity);
-        test_scenario::return_shared(map);
-
+        test_scenario::return_shared(schema);
         dapp.distroy_dapp_for_testing();
         scenario.end();
     }

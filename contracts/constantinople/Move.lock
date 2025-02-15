@@ -2,7 +2,7 @@
 
 [move]
 version = 3
-manifest_digest = "FDF26E8CEBB60685F63D29F36CC6D18001A6B7C719E6C4F709F216E6632E3553"
+manifest_digest = "7849D4228A12F69A1CE3B324DE8068AEAB723A8B312CF2BF367A05CDDE774330"
 deps_digest = "3C4103934B1E040BB6B23F1D610B4EF9F2F1166A50A104EADCF77467C004C600"
 dependencies = [
   { id = "Dubhe", name = "Dubhe" },
@@ -11,7 +11,7 @@ dependencies = [
 
 [[move.package]]
 id = "Dubhe"
-source = { git = "https://github.com/0xobelisk/dubhe-framework.git", rev = "dubhe-testnet-v1.1.0", subdir = "" }
+source = { local = "../dubhe-framework" }
 
 dependencies = [
   { id = "Sui", name = "Sui" },

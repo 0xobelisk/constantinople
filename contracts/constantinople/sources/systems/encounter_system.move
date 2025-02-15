@@ -1,50 +1,51 @@
-module constantinople::encounter_system {
-    use constantinople::encounter_schema::Encounter;
-    use constantinople::monster_catch_result;
-    use constantinople::monster_catch_attempt_event;
-    use constantinople::not_in_encounter_error;
-    use sui::random::Random;
-    use sui::random;
-    use constantinople::entity_schema::Entity;
+module constantinople::encounter_system;
 
-    public fun throw_ball(entity: &mut Entity, encounter: &mut Encounter , random: &Random, ctx: &mut TxContext) {
-        let player = ctx.sender();
+use constantinople::schema::Schema;
+use constantinople::monster_catch_result;
+use constantinople::events::{
+    monster_catch_attempt_event
+};
+use constantinople::errors::{
+    not_in_encounter_error
+};
+use sui::random::Random;
+use sui::random;
 
-        not_in_encounter_error::require(encounter.monster_info().contains_key(player));
+entry fun throw_ball(schema: &mut Schema, random: &Random, ctx: &mut TxContext) {
+    let player = ctx.sender();
 
-        let (monster, catch_attempts) = encounter.monster_info().get(player).get();
+    not_in_encounter_error(schema.encounter().contains(player));
 
-        let mut generator = random::new_generator(random, ctx);
-        let rand = random::generate_u128(&mut generator);
-        // std::debug::print(&rand);
-        if (rand % 2 == 0) {
-            // 50% chance to catch monster
-            monster_catch_attempt_event::emit(player, monster, monster_catch_result::new_caught());
-            let mut monsters = entity.owned_by().get(player);
-            monsters.push_back(monster);
-            entity.owned_by().set(player, monsters);
-            encounter.monster_info().remove(player);
-        } else if (catch_attempts >= 2) {
-            // Missed 2 times, monster escapes
-            monster_catch_attempt_event::emit(player, monster, monster_catch_result::new_fled());
-            entity.monster().remove(monster);
-            encounter.monster_info().remove(player);
-        } else {
-            // Throw missed!
-            monster_catch_attempt_event::emit(player, monster, monster_catch_result::new_missed());
-            encounter.monster_info().mutate!(player, |encounter| {
-                encounter.set_catch_attempts(catch_attempts + 1);
-            });
-        }
+    let (monster, catch_attempts) = schema.encounter().get(player).get();
+
+    let mut generator = random::new_generator(random, ctx);
+    let rand = random::generate_u128(&mut generator);
+    // std::debug::print(&rand);
+    if (rand % 2 == 0) {
+        // 50% chance to catch monster
+        monster_catch_attempt_event(player, monster, monster_catch_result::new_caught());
+        schema.owned_by().set(monster, player);
+        schema.encounter().remove(player);
+    } else if (catch_attempts >= 2) {
+        // Missed 2 times, monster escapes
+        monster_catch_attempt_event(player, monster, monster_catch_result::new_fled());
+        schema.monster().remove(monster);
+        schema.encounter().remove(player);
+    } else {
+        // Throw missed!
+        monster_catch_attempt_event(player, monster, monster_catch_result::new_missed());
+        let mut encounter_info = schema.encounter()[player];
+        encounter_info.set_catch_attempts(catch_attempts + 1);
+        schema.encounter().set(player, encounter_info);
+    }
 }
 
-    public fun flee(entity: &mut Entity, encounter: &mut Encounter, ctx: &mut TxContext) {
-        let player = ctx.sender();
+entry fun flee(schema: &mut Schema, ctx: &TxContext) {
+    let player = ctx.sender();
 
-        not_in_encounter_error::require(encounter.monster_info().contains_key(player));
+    not_in_encounter_error(schema.encounter().contains(player));
 
-        let monster_info  = encounter.monster_info().get(player);
-        entity.monster().remove(monster_info.get_monster());
-        encounter.monster_info().remove(player);
-    }
+    let encounter_info  = schema.encounter()[player];
+    schema.monster().remove(encounter_info.get_monster());
+    schema.encounter().remove(player);
 }

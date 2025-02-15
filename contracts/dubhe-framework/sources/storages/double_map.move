@@ -1,153 +1,107 @@
-#[allow(unused_variable)]
-module dubhe::storage_double_map {
+module dubhe::storage_double_map;
 
-    // This key does not exist in the map
-    const EKeyDoesNotExist: u64 = 0;
+use std::ascii::{String, string};
+use sui::dynamic_field as field;
+use dubhe::storage_event;
+use std::option::some;
 
-    /// This key already exists in the map
-    const EKeyAlreadyExists: u64 = 1;
+// An entry in the map
+public struct Entry<K1: copy + drop + store, K2: copy + drop + store> has copy, drop, store {
+    key1: K1,
+    key2: K2,
+}
 
-    // An entry in the map
-    public struct Entry<K1: copy + drop + store, K2: copy + drop + store, V: store> has copy, drop, store {
-        key1: K1,
-        key2: K2,
-        value: V,
+public struct StorageDoubleMap<phantom K1: copy + drop + store, phantom K2: copy + drop + store, phantom V: copy + drop + store> has key, store {
+    /// the ID of this Storage
+    id: UID,
+    // the name of the Storage
+    name: String,
+    /// the number of key-value pairs in the Storage
+    size: u64,
+}
+
+/// Creates a new, empty table
+public fun new<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(name: vector<u8>, ctx: &mut TxContext): StorageDoubleMap<K1, K2, V> {
+    StorageDoubleMap {
+        id: object::new(ctx),
+        name: string(name),
+        size: 0,
     }
+}
 
-    // A map data structure backed by a vector. The map is guaranteed not to contain duplicate keys, but entries
-    public struct StorageDoubleMap<K1: copy + drop + store, K2: copy + drop + store, V: store> has store {
-        contents: vector<Entry<K1, K2, V>>,
+/// Adds a key-value pair to the table `table: &mut Table<K, V>`
+public fun set<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(table: &mut StorageDoubleMap<K1, K2, V>, k1: K1, k2: K2, v: V) {
+    let k = Entry { key1: k1, key2: k2 };
+    if (table.contains(k1, k2)) {
+        field::remove<Entry<K1, K2>, V>(&mut table.id, k);
+        field::add(&mut table.id, k, v);
+    } else {
+        field::add(&mut table.id, k, v);
+        table.size = table.size + 1;
+    };
+    storage_event::emit_set_record<K1, K2, V>(table.name, some(k1), some(k2), some(v));
+}
+
+/// Immutable borrows the value associated with the key in the table `table: &Table<K, V>`.
+public fun try_get<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(table: &StorageDoubleMap<K1, K2, V>, k1: K1, k2: K2): Option<V> {
+    if (table.contains(k1, k2)) {
+        option::some(table[k1, k2])
+    } else {
+        option::none()
     }
+}
 
-    // Create an empty `StorageDoubleMap`
-    public fun new<K1: copy + drop + store, K2: copy + drop + store, V: store>(): StorageDoubleMap<K1, K2,V> {
-        StorageDoubleMap { contents: vector[] }
+#[syntax(index)]
+/// Immutable borrows the value associated with the key in the table `table: &Table<K, V>`.
+/// Aborts with `sui::dynamic_field::EFieldDoesNotExist` if the table does not have an entry with
+/// that key `k: K`.
+public fun get<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(table: &StorageDoubleMap<K1, K2, V>, k1: K1, k2: K2): &V {
+    let k = Entry { key1: k1, key2: k2 };
+    field::borrow(&table.id, k)
+}
+
+/// Removes the key-value pair in the table `table: &mut Table<K, V>` and returns the value.
+/// Aborts with `sui::dynamic_field::EFieldDoesNotExist` if the table does not have an entry with
+/// that key `k: K`.
+public fun remove<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(table: &mut StorageDoubleMap<K1, K2, V>, k1: K1, k2: K2): V {
+    let k = Entry { key1: k1, key2: k2 };
+    let v = field::remove<Entry<K1, K2>, V>(&mut table.id, k);
+    table.size = table.size - 1;
+    storage_event::emit_remove_record<K1, K2>(table.name, some(k1), some(k2));
+    v
+}
+
+/// Removes the key-value pair in the table `table: &mut Table<K, V>` and returns the value.
+/// Aborts with `sui::dynamic_field::EFieldDoesNotExist` if the table does not have an entry with
+/// that key `k: K`.
+public fun try_remove<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(table: &mut StorageDoubleMap<K1, K2, V>, k1: K1, k2: K2): Option<V> {
+    if (table.contains(k1, k2)) {
+       let v = table.remove<K1, K2, V>(k1, k2);
+        option::some(v)
+    } else {
+        option::none()
     }
+}
 
-    // Return true if `self` contains_key an entry for `key`, false otherwise
-    public fun contains_key<K1: copy + drop + store, K2: copy + drop + store, V: store>(self: &StorageDoubleMap<K1, K2, V>, key1: K1, key2: K2): bool {
-        get_idx_opt(self, key1, key2).is_some()
-    }
+/// Returns true iff there is a value associated with the key `k: K` in table `table: &Table<K, V>`
+public fun contains<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(table: &StorageDoubleMap<K1, K2, V>, k1: K1, k2: K2): bool {
+    let k = Entry { key1: k1, key2: k2 };
+    field::exists_with_type<Entry<K1, K2>, V>(&table.id, k)
+}
 
-    // Return the number of entries in `self`
-    public fun length<K1: copy + drop + store, K2: copy + drop + store, V: store>(self: &StorageDoubleMap<K1, K2, V>): u64 {
-        self.contents.length()
-    }
+/// Returns the size of the table, the number of key-value pairs
+public fun length<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(table: &StorageDoubleMap<K1, K2, V>): u64 {
+    table.size
+}
 
-    // Get a reference to the value bound to `key` in `self`.
-    // Aborts if `key` is not bound in `self`.
-    public fun borrow<K1: copy + drop + store, K2: copy + drop + store, V: store>(self: &StorageDoubleMap<K1, K2, V>, key1: K1, key2: K2): &V {
-        let idx = self.get_idx(key1, key2);
-        let entry = &self.contents[idx];
-        &entry.value
-    }
+/// Returns true iff the table is empty (if `length` returns `0`)
+public fun is_empty<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(table: &StorageDoubleMap<K1, K2, V>): bool {
+    table.size == 0
+}
 
-    // Get a mutable reference to the value bound to `key` in `self`.
-    // Aborts if `key` is not bound in `self`.
-    public fun borrow_mut<K1: copy + drop + store, K2: copy + drop + store, V: store>(self: &mut StorageDoubleMap<K1, K2, V>, key1: K1, key2: K2): &mut V {
-        let idx = self.get_idx(key1, key2);
-        let entry = &mut self.contents[idx];
-        &mut entry.value
-    }
-
-    // Remove the entry `key` |-> `value` from self. Aborts if `key` is not bound in `self`.
-    public fun take<K1: copy + drop + store, K2: copy + drop + store, V: store>(self: &mut StorageDoubleMap<K1, K2,V>, key1: K1, key2: K2): V {
-        let idx = self.get_idx(key1, key2);
-        let Entry { key1, key2, value } = self.contents.remove(idx);
-        value
-    }
-
-    public macro fun mutate<$K1: copy + drop, $K2: copy + drop, $V: copy + drop>(
-        $self: &mut StorageDoubleMap<$K1, $K2, $V>,
-        $key1: $K1,
-        $key2: $K2,
-        $f: |&mut $V|
-    ) {
-        let self = $self;
-        let key1 = $key1;
-        let key2 = $key2;
-        $f(borrow_mut(self, key1, key2));
-    }
-
-    // Returns a list of keys in the map.
-    // Do not assume any particular ordering.
-    public fun keys<K1: copy + drop + store, K2: copy + drop + store, V: store>(self: &StorageDoubleMap<K1, K2, V>): (vector<K1>, vector<K2>) {
-        let mut i = 0;
-        let n = self.contents.length();
-        let mut keys1 = vector[];
-        let mut keys2 = vector[];
-        while (i < n) {
-            let entry = self.contents.borrow(i);
-            keys1.push_back(entry.key1);
-            keys2.push_back(entry.key2);
-            i = i + 1;
-        };
-        (keys1, keys2)
-    }
-
-    // Find the index of `key` in `self`. Return `None` if `key` is not in `self`.
-    // Note that map entries are stored in insertion order, *not* sorted by key.
-    public fun get_idx_opt<K1: copy + drop + store, K2: copy + drop + store, V: store>(self: &StorageDoubleMap<K1, K2, V>, key1: K1, key2: K2): Option<u64> {
-        self.contents.find_index!(|entry| { entry.key1 == key1 && entry.key2 == key2 })
-    }
-
-    // Find the index of `key` in `self`. Aborts if `key` is not in `self`.
-    // Note that map entries are stored in insertion order, *not* sorted by key.
-    public fun get_idx<K1: copy + drop + store, K2: copy + drop + store, V: store>(self: &StorageDoubleMap<K1, K2, V>, key1: K1, key2: K2): u64 {
-        let idx_opt = self.get_idx_opt(key1, key2);
-        assert!(idx_opt.is_some(), EKeyDoesNotExist);
-        idx_opt.destroy_some()
-    }
-
-    /// Insert the entry `key` |-> `value` into `self`.
-    /// Aborts if `key` is already bound in `self`.
-    public fun insert<K1: copy + drop + store, K2: copy + drop + store, V: store>(self: &mut StorageDoubleMap<K1, K2, V>, key1: K1, key2: K2, value: V) {
-        assert!(!self.contains_key(key1, key2), EKeyAlreadyExists);
-        self.contents.push_back(Entry { key1, key2, value })
-    }
-
-    // =======================================Value: drop + copy + store=======================================
-
-    // Insert the entry `key` |-> `value` into `self`.
-    public fun set<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(self: &mut StorageDoubleMap<K1, K2,V>, key1: K1, key2: K2, value: V) {
-        let idx = self.get_idx_opt(key1, key2);
-        if (idx.is_some()) {
-            self.contents[idx.destroy_some()].value = value;
-        } else {
-            self.contents.push_back(Entry { key1, key2, value })
-        }
-    }
-
-    // Get a reference to the value bound to `key` in `self`.
-    // Aborts if `key` is not bound in `self`.
-    public fun get<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(self: &StorageDoubleMap<K1, K2, V>, key1: K1, key2: K2): V {
-        let idx = self.get_idx(key1, key2);
-        let entry = &self.contents[idx];
-        entry.value
-    }
-
-    // Safely try borrow a value bound to `key` in `self`.
-    // Return Some(V) if the value exists, None otherwise.
-    // Only works for a "copyable" value as references cannot be stored in `vector`.
-    public fun try_get<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(self: &StorageDoubleMap<K1, K2, V>, key1: K1, key2: K2): Option<V> {
-        if (self.contains_key(key1, key2)) {
-            option::some(get(self, key1, key2))
-        } else {
-            option::none()
-        }
-    }
-
-    // Remove the entry `key` |-> `value` from self.
-    public fun remove<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(self: &mut StorageDoubleMap<K1, K2,V>, key1: K1, key2: K2) {
-        let idx = self.get_idx_opt(key1, key2);
-        if (idx.is_some()) {
-            self.contents.remove(idx.destroy_some());
-        }
-    }
-
-    // Returns a list of values in the map.
-    // Do not assume any particular ordering.
-    public fun values<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(self: &StorageDoubleMap<K1, K2, V>): vector<V> {
-        self.contents.map!(|entry| entry.value)
-    }
+/// Drop a possibly non-empty table.
+/// Usable only if the value type `V` has the `drop` ability
+public fun drop<K1: copy + drop + store, K2: copy + drop + store, V: copy + drop + store>(table: StorageDoubleMap<K1, K2, V>) {
+    let StorageDoubleMap { id, name: _, size: _ } = table;
+    id.delete()
 }

@@ -7,12 +7,8 @@
   module constantinople::monster_catch_result {
 
   public enum MonsterCatchResult has copy, drop , store {
-                                Missed,Caught,Fled
+                                Caught,Fled,Missed
                         }
-
-  public fun new_missed(): MonsterCatchResult {
-    MonsterCatchResult::Missed
-  }
 
   public fun new_caught(): MonsterCatchResult {
     MonsterCatchResult::Caught
@@ -20,5 +16,9 @@
 
   public fun new_fled(): MonsterCatchResult {
     MonsterCatchResult::Fled
+  }
+
+  public fun new_missed(): MonsterCatchResult {
+    MonsterCatchResult::Missed
   }
 }

@@ -7,22 +7,22 @@
   module constantinople::monster_type {
 
   public enum MonsterType has copy, drop , store {
-                                None,Eagle,Rat,Caterpillar
+                                Caterpillar,Eagle,None,Rat
                         }
 
-  public fun new_none(): MonsterType {
-    MonsterType::None
+  public fun new_caterpillar(): MonsterType {
+    MonsterType::Caterpillar
   }
 
   public fun new_eagle(): MonsterType {
     MonsterType::Eagle
   }
 
-  public fun new_rat(): MonsterType {
-    MonsterType::Rat
+  public fun new_none(): MonsterType {
+    MonsterType::None
   }
 
-  public fun new_caterpillar(): MonsterType {
-    MonsterType::Caterpillar
+  public fun new_rat(): MonsterType {
+    MonsterType::Rat
   }
 }

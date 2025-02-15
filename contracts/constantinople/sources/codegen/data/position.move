@@ -8,14 +8,6 @@
 
   use std::ascii::String;
 
-  use constantinople::monster_type::MonsterType;
-
-  use constantinople::direction::Direction;
-
-  use constantinople::terrain_type::TerrainType;
-
-  use constantinople::monster_catch_result::MonsterCatchResult;
-
   public struct Position has copy, drop, store {
     x: u64,
     y: u64,

@@ -8,27 +8,19 @@
 
   use std::ascii::String;
 
-  use constantinople::monster_type::MonsterType;
-
-  use constantinople::direction::Direction;
-
-  use constantinople::terrain_type::TerrainType;
-
-  use constantinople::monster_catch_result::MonsterCatchResult;
-
   public struct MapConfig has copy, drop, store {
     width: u64,
     height: u64,
-    terrain: vector<vector<TerrainType>>,
+    terrain: vector<vector<u8>>,
   }
 
-  public fun new(width: u64, height: u64, terrain: vector<vector<TerrainType>>): MapConfig {
+  public fun new(width: u64, height: u64, terrain: vector<vector<u8>>): MapConfig {
     MapConfig {
                                    width,height,terrain
                                }
   }
 
-  public fun get(self: &MapConfig): (u64,u64,vector<vector<TerrainType>>) {
+  public fun get(self: &MapConfig): (u64,u64,vector<vector<u8>>) {
     (self.width,self.height,self.terrain)
   }
 
@@ -40,7 +32,7 @@
     self.height
   }
 
-  public fun get_terrain(self: &MapConfig): vector<vector<TerrainType>> {
+  public fun get_terrain(self: &MapConfig): vector<vector<u8>> {
     self.terrain
   }
 
@@ -52,11 +44,11 @@
     self.height = height;
   }
 
-  public(package) fun set_terrain(self: &mut MapConfig, terrain: vector<vector<TerrainType>>) {
+  public(package) fun set_terrain(self: &mut MapConfig, terrain: vector<vector<u8>>) {
     self.terrain = terrain;
   }
 
-  public(package) fun set(self: &mut MapConfig, width: u64, height: u64, terrain: vector<vector<TerrainType>>) {
+  public(package) fun set(self: &mut MapConfig, width: u64, height: u64, terrain: vector<vector<u8>>) {
     self.width = width;
     self.height = height;
     self.terrain = terrain;

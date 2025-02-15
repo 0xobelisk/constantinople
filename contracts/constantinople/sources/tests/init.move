@@ -12,7 +12,7 @@
     let mut scenario = test_scenario::begin(sender);
     let ctx = test_scenario::ctx(&mut scenario);
     let clock = clock::create_for_testing(ctx);
-    constantinople::deploy_hook::run(&clock, ctx);
+    constantinople::genesis::run(&clock, ctx);
     clock::destroy_for_testing(clock);
     test_scenario::next_tx(&mut scenario,sender);
     let dapp = test_scenario::take_shared<Dapp>(&scenario);

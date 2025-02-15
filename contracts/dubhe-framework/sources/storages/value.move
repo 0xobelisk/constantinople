@@ -1,97 +1,90 @@
-module dubhe::storage_value {
+module dubhe::storage_value;
 
-    /// This key does not exist in the map
-    const EValueDoesNotExist: u64 = 0;
+use std::ascii::{String, string};
+use sui::dynamic_field as field;
+use dubhe::storage_event;
+use std::option::some;
+use std::option::none;
 
-    /// This key does not exist in the map
-    const EValueAlreadyExist: u64 = 1;
+public struct StorageValue<phantom V: copy + drop + store> has key, store {
+    /// the ID of this Storage
+    id: UID,
+    // the name of the Storage
+    name: String,
+    /// the number of key-value pairs in the Storage
+    size: u64,
+}
 
-    /// An entry in the value
-    public struct Entry<Value: store> has copy, drop, store {
-        value: Value,
+/// Creates a new, empty table
+public fun new<V: copy + drop + store>(name: vector<u8>, ctx: &mut TxContext): StorageValue<V> {
+    StorageValue {
+        id: object::new(ctx),
+        name: string(name),
+        size: 0,
     }
+}
 
-    /// A storable handler for values in general. Is used in the `StorageValue`
-    public struct StorageValue<Value: store> has store {
-        contents: vector<Entry<Value>>,
+/// Adds a key-value pair to the table `table: &mut Table<K, V>`
+public fun set<V: copy + drop + store>(table: &mut StorageValue<V>, v: V) {
+    if (table.contains()) {
+        field::remove<u8, V>(&mut table.id, 0);
+    };
+    field::add<u8, V>(&mut table.id, 0, v);
+    storage_event::emit_set_record<u8, u8, V>(table.name, none(), none(), some(v));
+}
+
+/// Immutable borrows the value associated with the key in the table `table: &Table<K, V>`.
+public fun try_get<V: copy + drop + store>(table: &StorageValue<V>): Option<V> {
+    if (table.contains()) {
+        option::some(table[])
+    } else {
+        option::none()
     }
+}
 
-    /// Creates a new, empty StorageValue
-    public fun new<Value: store>(): StorageValue<Value> {
-        StorageValue { contents: vector[] }
+#[syntax(index)]
+/// Immutable borrows the value associated with the key in the table `table: &Table<K, V>`.
+/// Aborts with `sui::dynamic_field::EFieldDoesNotExist` if the table does not have an entry with
+/// that key `k: K`.
+public fun get<V: copy + drop + store>(table: &StorageValue<V>): &V {
+    field::borrow<u8, V>(&table.id, 0)
+}
+
+/// Removes the key-value pair in the table `table: &mut Table<K, V>` and returns the value.
+/// Aborts with `sui::dynamic_field::EFieldDoesNotExist` if the table does not have an entry with
+/// that key `k: K`.
+public fun remove<V: copy + drop + store>(table: &mut StorageValue<V>): V {
+    let v = field::remove<u8, V>(&mut table.id, 0);
+    storage_event::emit_remove_record<u8, u8>(table.name, none(), none());
+    v
+}
+
+/// Removes the key-value pair in the table `table: &mut Table<K, V>` and returns the value.
+/// Aborts with `sui::dynamic_field::EFieldDoesNotExist` if the table does not have an entry with
+/// that key `k: K`.
+public fun try_remove<V: copy + drop + store>(table: &mut StorageValue<V>): Option<V> {
+    if (table.contains()) {
+        let v = field::remove<u8, V>(&mut table.id, 0);
+        storage_event::emit_remove_record<u8, u8>(table.name, none(), none());
+        option::some(v)
+    } else {
+        option::none()
     }
+}
 
-    /// Gets the value of the StorageValue `self: &StorageValue<Value>`.
-    public fun borrow<Value: store>(self: &StorageValue<Value>): &Value {
-        assert!(self.contains(), EValueDoesNotExist);
-        &self.contents[0].value
-    }
+/// Returns true iff there is a value associated with the key `k: K` in table `table: &Table<K, V>`
+public fun contains<V: copy + drop + store>(table: &StorageValue<V>): bool {
+    field::exists_with_type<u8, V>(&table.id, 0)
+}
 
-    /// Gets the value of the StorageValue `self: &mut StorageValue<Value>`.
-    public fun borrow_mut<Value: store>(self: &mut StorageValue<Value>): &mut Value {
-        assert!(self.contains(), EValueDoesNotExist);
-        &mut self.contents[0].value
-    }
+/// Returns true iff the table is empty (if `length` returns `0`)
+public fun is_empty<V: copy + drop + store>(table: &StorageValue<V>): bool {
+    !field::exists_with_type<u8, V>(&table.id, 0)
+}
 
-    /// Update the `value` of the `StorageValue`.
-    public macro fun mutate<$Value: store>($self: &mut StorageValue<$Value>, $f: |&mut $Value|) {
-        let self = $self;
-        $f(borrow_mut(self));
-    }
-
-    /// Return true if `self` contains_key an entry for `key`, false otherwise
-    public fun contains<V: store>(self: &StorageValue<V>): bool {
-        self.contents.length() == 1
-    }
-
-    /// Remove the entry `key` |-> `value` from self. Aborts if `key` is not bound in `self`.
-    public fun take<V: store>(self: &mut StorageValue<V>): V {
-        assert!(self.contains(), EValueDoesNotExist);
-        let Entry { value } = self.contents.remove(0);
-        value
-    }
-
-    /// Put the `value` of the `StorageValue`.
-    public fun put<V: store>(self: &mut StorageValue<V>, value: V) {
-        assert!(!self.contains(), EValueAlreadyExist);
-        self.contents.push_back(Entry { value });
-    }
-
-
-    // ======================================= Value: drop + copy + store =======================================
-
-    /// Set the `value` of the `StorageValue`.
-    public fun set<V: copy + drop + store>(self: &mut StorageValue<V>, value: V) {
-        if (self.contains()) {
-            *self.borrow_mut() = value;
-        } else {
-            self.contents.push_back(Entry { value });
-        }
-    }
-
-    /// Get the `value` of the `StorageValue`.
-    public fun get<V: copy + drop + store>(self: &StorageValue<V>): V {
-        assert!(self.contains(), EValueDoesNotExist);
-        self.contents[0].value
-    }
-
-    /// Safely try borrow a value bound to `key` in `self`.
-    /// Return Some(V) if the value exists, None otherwise.
-    /// Only works for a "copyable" value as references cannot be stored in `vector`.
-    public fun try_get<V: copy + drop + store>(self: &StorageValue<V>): Option<V> {
-        if (self.contains()) {
-            option::some(self.contents[0].value)
-        } else {
-            option::none()
-        }
-    }
-
-    /// Remove the entry `key` |-> `value` from self. Aborts if `key` is not bound in `self`.
-    public fun remove<V: copy + drop + store>(self: &mut StorageValue<V>) {
-        if (self.contains()) {
-            self.contents.remove(0);
-        }
-    }
-
-    // ============================================================================================
+/// Drop a possibly non-empty table.
+/// Usable only if the value type `V` has the `drop` ability
+public fun drop<V: copy + drop + store>(table: StorageValue<V>) {
+    let StorageValue { id, name: _, size: _ } = table;
+    id.delete()
 }
